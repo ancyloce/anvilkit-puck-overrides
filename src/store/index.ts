@@ -8,12 +8,17 @@ interface DrawerSlice {
   toggleDrawerGroup: (group: string) => void;
 }
 
+interface AsideSlice {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}
+
 interface OutlineSlice {
   outlineExpanded: Record<string, boolean>;
   toggleOutlineItem: (id: string) => void;
 }
 
-type UIStore = DrawerSlice & OutlineSlice;
+type UIStore = DrawerSlice & OutlineSlice & AsideSlice;
 
 export const uiStore = createStore<UIStore>()(
   subscribeWithSelector((set) => ({
@@ -35,6 +40,8 @@ export const uiStore = createStore<UIStore>()(
           [id]: !s.outlineExpanded[id],
         },
       })),
+    activeTab: "insert",
+    setActiveTab: (tab) => set({ activeTab: tab }),
   }))
 );
 
