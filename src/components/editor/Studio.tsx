@@ -3,10 +3,16 @@ import * as React from "react";
 import { Puck } from "@puckeditor/core";
 import type { Config, Data, Overrides } from "@puckeditor/core";
 import { createAiPlugin } from "@puckeditor/plugin-ai";
+
 import "@puckeditor/plugin-ai/styles.css";
-import { puckOverrides } from "../overrides/index";
 import "@puckeditor/core/puck.css";
-import { EditorLayout } from '../layout/Layout'
+
+import { puckOverrides } from "../overrides/index";
+import { EditorLayout } from "../layout/Layout";
+
+import type { ImagesProps } from "../layout/sidebar/library/ImageLibrary";
+import type { CopywritingProps } from "../layout/sidebar/library/CopyLibrary";
+export type { ImagesProps, CopywritingProps };
 
 export interface StudioProps {
   // Required Puck props
@@ -29,6 +35,10 @@ export interface StudioProps {
   headerSlot?: React.ReactNode;
   drawerHeaderSlot?: React.ReactNode;
   className?: string;
+
+  // Library data
+  images?: ImagesProps;
+  copywritings?: CopywritingProps;
 }
 
 export function Studio({
@@ -39,16 +49,18 @@ export function Studio({
   overrideExtensions,
   aiHost,
   className,
+  images,
+  copywritings,
 }: StudioProps) {
   const aiPlugin = React.useMemo(
     () => createAiPlugin({ host: aiHost }),
-    [aiHost]
+    [aiHost],
   );
 
   // Merge: ai plugin preview override → puckOverrides defaults → consumer extensions win
   const mergedOverrides: Partial<Overrides> = React.useMemo(
     () => ({ ...aiPlugin.overrides, ...puckOverrides, ...overrideExtensions }),
-    [aiPlugin.overrides, overrideExtensions]
+    [aiPlugin.overrides, overrideExtensions],
   );
 
   return (
@@ -61,7 +73,11 @@ export function Studio({
         overrides={mergedOverrides}
         plugins={[aiPlugin]}
       >
-        <EditorLayout aiPanel={aiPlugin.render()} />
+        <EditorLayout
+          aiPanel={aiPlugin.render()}
+          images={images}
+          copywritings={copywritings}
+        />
       </Puck>
     </div>
   );

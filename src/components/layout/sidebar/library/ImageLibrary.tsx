@@ -1,11 +1,24 @@
 "use client";
 import * as React from "react";
 import { Search } from "lucide-react";
-import { Input } from "../../../ui/input";
-import { ScrollArea } from "../../../ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Module-level variable shared with CanvasIframe (same bundle, same origin)
 export let pendingImageSrc: string | null = null;
+
+export interface ImageItem {
+  id: string;
+  src: string;
+  alt: string;
+}
+
+export interface ImagesProps {
+  /** Override the default picsum seed list */
+  seeds?: string[];
+  /** Provide a fully custom image list (bypasses seeds entirely) */
+  items?: ImageItem[];
+}
 
 const DEFAULT_SEEDS = [
   "forest", "ocean", "mountain", "city",
@@ -17,14 +30,19 @@ function picsumUrl(seed: string, w = 960, h = 960): string {
   return `https://picsum.photos/seed/${encodeURIComponent(seed)}/${w}/${h}`;
 }
 
-function getDefaultImages(): { src: string; alt: string }[] {
-  return DEFAULT_SEEDS.map((seed) => ({ src: picsumUrl(seed), alt: seed }));
+function getDefaultImages(seeds: string[]): ImageItem[] {
+  return seeds.map((seed, i) => ({
+    src: picsumUrl(seed),
+    alt: seed,
+    id: `${seed}-${i}`,
+  }));
 }
 
-function getSearchImages(query: string): { src: string; alt: string }[] {
+function getSearchImages(query: string): ImageItem[] {
   return Array.from({ length: 12 }, (_, i) => ({
     src: picsumUrl(`${query}-${i}`),
     alt: `${query} ${i + 1}`,
+    id: `${query}-${i}`,
   }));
 }
 
@@ -57,10 +75,16 @@ function removeGhost() {
   ghostEl = null;
 }
 
-export function ImageLibrary(): React.ReactElement {
+export function ImageLibrary({
+  seeds,
+  items: customImages,
+}: ImagesProps = {}): React.ReactElement {
+  const effectiveSeeds = seeds ?? DEFAULT_SEEDS;
   const [query, setQuery] = React.useState("");
   const [committed, setCommitted] = React.useState("");
-  const [images, setImages] = React.useState<{ src: string; alt: string }[]>(getDefaultImages);
+  const [items, setItems] = React.useState<ImageItem[]>(
+    () => customImages ?? getDefaultImages(effectiveSeeds),
+  );
 
   React.useEffect(() => {
     const t = setTimeout(() => setCommitted(query.trim()), 400);
@@ -68,17 +92,27 @@ export function ImageLibrary(): React.ReactElement {
   }, [query]);
 
   React.useEffect(() => {
-    setImages(committed ? getSearchImages(committed) : getDefaultImages());
-  }, [committed]);
+    if (customImages) return; // external data — don't override on search
+    setItems(
+      committed ? getSearchImages(committed) : getDefaultImages(effectiveSeeds),
+    );
+  }, [committed, customImages, effectiveSeeds]);
 
-  function handlePointerDown(e: React.PointerEvent<HTMLDivElement>, src: string) {
+  function handlePointerDown(
+    e: React.PointerEvent<HTMLDivElement>,
+    src: string,
+  ) {
     e.stopPropagation();
     e.currentTarget.setPointerCapture(e.pointerId);
 
     pendingImageSrc = src;
     ghostEl = createGhost(src);
     moveGhost(e.clientX, e.clientY);
-    window.dispatchEvent(new CustomEvent("anvilkit:librarydragstart", { detail: { type: "image" } }));
+    window.dispatchEvent(
+      new CustomEvent("anvilkit:librarydragstart", {
+        detail: { type: "image" },
+      }),
+    );
 
     function onMove(ev: PointerEvent) {
       moveGhost(ev.clientX, ev.clientY);
@@ -89,9 +123,11 @@ export function ImageLibrary(): React.ReactElement {
       pendingImageSrc = null;
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
-      window.dispatchEvent(new CustomEvent("anvilkit:imagedrop", {
-        detail: { src, clientX: ev.clientX, clientY: ev.clientY },
-      }));
+      window.dispatchEvent(
+        new CustomEvent("anvilkit:imagedrop", {
+          detail: { src, clientX: ev.clientX, clientY: ev.clientY },
+        }),
+      );
     }
 
     window.addEventListener("pointermove", onMove);
@@ -116,20 +152,20 @@ export function ImageLibrary(): React.ReactElement {
       </div>
       <ScrollArea className="flex-1">
         <div className="p-2 grid grid-cols-2 gap-2">
-          {images.map((img, i) => (
+          {items.map((item, i) => (
             <div
-              key={`${img.src}-${i}`}
-              onPointerDown={(e) => handlePointerDown(e, img.src)}
+              key={`${item.src}-${i}`}
+              onPointerDown={(e) => handlePointerDown(e, item.src)}
               className="rounded-md overflow-hidden border border-border bg-muted/40 cursor-grab select-none hover:ring-2 hover:ring-primary/50 active:cursor-grabbing transition-all"
             >
               <img
-                src={img.src}
-                alt={img.alt}
+                src={item.src}
+                alt={item.alt}
                 className="w-full h-20 object-cover pointer-events-none"
                 loading="lazy"
               />
               <div className="px-1.5 py-1 text-xs text-muted-foreground truncate capitalize">
-                {img.alt}
+                {item.alt}
               </div>
             </div>
           ))}
