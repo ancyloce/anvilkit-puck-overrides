@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@anvilkit/puck-overrides)](https://www.npmjs.com/package/@anvilkit/puck-overrides)
 [![license](https://img.shields.io/npm/l/@anvilkit/puck-overrides)](../LICENSE)
 [![react](https://img.shields.io/badge/react-19-blue)](https://react.dev)
-[![puck](https://img.shields.io/badge/puck-%5E0.20.2-purple)](https://puckeditor.com)
+[![puck](https://img.shields.io/badge/puck-%5E0.21.1-purple)](https://puckeditor.com)
 
 为 Puck Editor 全部 15 个覆写挂载点提供开箱即用的 Shadcn UI 替换方案，面向企业级场景，TypeScript 优先。
 
@@ -45,7 +45,7 @@ pnpm add @anvilkit/puck-overrides
 |---|---|
 | `react` | `>=19` |
 | `react-dom` | `>=19` |
-| `@puckeditor/core` | `^0.20.2` |
+| `@puckeditor/core` | `^0.21.1` |
 | `tailwindcss` | `^4` |
 
 > Radix UI 原语和 `lucide-react` 已**打包进本库**，无需单独安装。

@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@anvilkit/puck-overrides)](https://www.npmjs.com/package/@anvilkit/puck-overrides)
 [![license](https://img.shields.io/npm/l/@anvilkit/puck-overrides)](./LICENSE)
 [![react](https://img.shields.io/badge/react-19-blue)](https://react.dev)
-[![puck](https://img.shields.io/badge/puck-%5E0.20.2-purple)](https://puckeditor.com)
+[![puck](https://img.shields.io/badge/puck-%5E0.21.1-purple)](https://puckeditor.com)
 
 Drop-in Shadcn UI overrides for all 15 Puck Editor surfaces — enterprise-ready, TypeScript-first.
 
@@ -45,7 +45,7 @@ The package ships both ESM and CJS builds. No additional bundler configuration i
 |---|---|
 | `react` | `>=19` |
 | `react-dom` | `>=19` |
-| `@puckeditor/core` | `^0.20.2` |
+| `@puckeditor/core` | `^0.21.1` |
 | `tailwindcss` | `^4` |
 
 > Radix UI primitives and `lucide-react` are **bundled** — do not install them separately.
