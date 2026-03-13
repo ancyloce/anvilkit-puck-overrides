@@ -1,0 +1,145 @@
+"use client";
+import * as React from "react";
+import { Search, Type } from "lucide-react";
+import { Input } from "../../../ui/input";
+import { ScrollArea } from "../../../ui/scroll-area";
+
+// Ghost element shown while dragging
+let ghostEl: HTMLDivElement | null = null;
+
+function createGhost(text: string): HTMLDivElement {
+  const el = document.createElement("div");
+  el.style.cssText = `
+    position: fixed; top: -9999px; left: -9999px; z-index: 99999;
+    max-width: 200px; padding: 6px 10px; border-radius: 6px;
+    background: #1e1e2e; color: #fff; font-size: 12px; line-height: 1.4;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3); pointer-events: none;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  `;
+  el.textContent = text.length > 40 ? text.slice(0, 40) + "…" : text;
+  document.body.appendChild(el);
+  return el;
+}
+
+function moveGhost(x: number, y: number) {
+  if (!ghostEl) return;
+  ghostEl.style.left = `${x + 12}px`;
+  ghostEl.style.top = `${y + 12}px`;
+}
+
+function removeGhost() {
+  ghostEl?.remove();
+  ghostEl = null;
+}
+
+const DEFAULT_SNIPPETS: { label: string; text: string; category: string }[] = [
+  // Headlines
+  { category: "Headlines", label: "Bold statement", text: "The Future Starts Here" },
+  { category: "Headlines", label: "Question hook", text: "Ready to Transform Your Business?" },
+  { category: "Headlines", label: "Value prop", text: "Simple, Powerful, Built for Teams" },
+  { category: "Headlines", label: "Action-led", text: "Ship Faster. Break Less. Sleep Better." },
+  // Subheadings
+  { category: "Subheadings", label: "Feature intro", text: "Everything you need, nothing you don't." },
+  { category: "Subheadings", label: "Social proof", text: "Trusted by over 10,000 teams worldwide." },
+  { category: "Subheadings", label: "CTA support", text: "Get started in minutes — no credit card required." },
+  // Body
+  { category: "Body", label: "Product description", text: "Our platform helps teams collaborate in real time, ship products faster, and stay aligned across every stage of the process." },
+  { category: "Body", label: "Feature benefit", text: "With built-in analytics and smart automation, you can focus on what matters most — building great products." },
+  { category: "Body", label: "About us", text: "We're a small team on a big mission: to make software development feel effortless for everyone." },
+  // CTAs
+  { category: "CTAs", label: "Primary", text: "Get Started Free" },
+  { category: "CTAs", label: "Secondary", text: "Learn More" },
+  { category: "CTAs", label: "Soft sell", text: "See How It Works" },
+  { category: "CTAs", label: "Urgency", text: "Start Your Free Trial Today" },
+];
+
+const CATEGORIES = Array.from(new Set(DEFAULT_SNIPPETS.map((s) => s.category)));
+
+export function CopyLibrary(): React.ReactElement {
+  const [query, setQuery] = React.useState("");
+
+  const filtered = query.trim()
+    ? DEFAULT_SNIPPETS.filter(
+        (s) =>
+          s.text.toLowerCase().includes(query.toLowerCase()) ||
+          s.label.toLowerCase().includes(query.toLowerCase()) ||
+          s.category.toLowerCase().includes(query.toLowerCase())
+      )
+    : DEFAULT_SNIPPETS;
+
+  function handlePointerDown(e: React.PointerEvent<HTMLDivElement>, text: string) {
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture(e.pointerId);
+
+    ghostEl = createGhost(text);
+    moveGhost(e.clientX, e.clientY);
+    window.dispatchEvent(new CustomEvent("anvilkit:librarydragstart", { detail: { type: "text" } }));
+
+    function onMove(ev: PointerEvent) {
+      moveGhost(ev.clientX, ev.clientY);
+    }
+
+    function onUp(ev: PointerEvent) {
+      removeGhost();
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.dispatchEvent(
+        new CustomEvent("anvilkit:textdrop", {
+          detail: { text, clientX: ev.clientX, clientY: ev.clientY },
+        })
+      );
+    }
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="px-3 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        Copy Library
+      </div>
+      <div className="p-2">
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="pl-8"
+            placeholder="Search copy..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="p-2 flex flex-col gap-4">
+          {(query.trim() ? [null] : CATEGORIES).map((cat) => {
+            const items = cat ? filtered.filter((s) => s.category === cat) : filtered;
+            if (!items.length) return null;
+            return (
+              <div key={cat ?? "results"}>
+                {cat && (
+                  <div className="px-1 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                    <Type className="h-3 w-3" />
+                    {cat}
+                  </div>
+                )}
+                <div className="flex flex-col gap-1">
+                  {items.map((snippet, i) => (
+                    <div
+                      key={i}
+                      onPointerDown={(e) => handlePointerDown(e, snippet.text)}
+                      className="rounded-md border border-border bg-muted/40 px-2.5 py-2 cursor-grab select-none hover:bg-muted hover:ring-1 hover:ring-primary/40 active:cursor-grabbing transition-all"
+                    >
+                      <div className="text-xs font-medium text-foreground/70 mb-0.5">{snippet.label}</div>
+                      <div className="text-xs text-foreground leading-snug line-clamp-2">{snippet.text}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+}
