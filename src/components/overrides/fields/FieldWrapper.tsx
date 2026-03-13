@@ -1,9 +1,52 @@
 "use client";
 import * as React from "react";
+import { usePuck } from "@puckeditor/core";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Info } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+
+type BreadcrumbSegment = { label: string; onSelect?: () => void };
+
+function useBreadcrumbs(): BreadcrumbSegment[] {
+  const { appState, dispatch, selectedItem, getParentById, getSelectorForId } =
+    usePuck();
+  const { itemSelector } = appState.ui;
+
+  const selectRoot = () =>
+    dispatch({ type: "setUi", ui: { itemSelector: null } });
+
+  if (!itemSelector || !selectedItem) {
+    return [{ label: "Page" }];
+  }
+
+  const selectedType = (selectedItem as any).type ?? "Component";
+  const parent = getParentById((selectedItem as any).props?.id ?? "");
+
+  if (!parent) {
+    // Top-level component
+    return [{ label: "Page", onSelect: selectRoot }, { label: selectedType }];
+  }
+
+  // Nested component — parent exists
+  const parentType = (parent as any).type ?? "Component";
+  let parentSelector: ReturnType<typeof getSelectorForId> = undefined;
+  try {
+    parentSelector = getSelectorForId((parent as any).props?.id ?? "");
+  } catch {
+    parentSelector = undefined;
+  }
+
+  return [{ label: "Page", onSelect: selectRoot }, { label: selectedType }];
+}
 
 // fields override — exact Puck signature: { children, isLoading, itemSelector }
 export function FieldWrapper({
@@ -13,10 +56,39 @@ export function FieldWrapper({
   isLoading?: boolean;
   itemSelector?: unknown;
 }): React.ReactElement {
-  console.log(" the FieldWrapper is called");
+  const crumbs = useBreadcrumbs();
+
   return (
     <ScrollArea className="h-full">
-      <div className="flex flex-col gap-0">{children}</div>
+      <div className="flex flex-col gap-0">
+        <div className="px-3 py-2 border-b">
+          <Breadcrumb>
+            <BreadcrumbList>
+              {crumbs.map((crumb, i) => {
+                const isLast = i === crumbs.length - 1;
+                return (
+                  <React.Fragment key={i}>
+                    {i > 0 && <BreadcrumbSeparator />}
+                    <BreadcrumbItem>
+                      {isLast ? (
+                        <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink
+                          className="cursor-pointer"
+                          onClick={crumb.onSelect}
+                        >
+                          {crumb.label}
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                  </React.Fragment>
+                );
+              })}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+        {children}
+      </div>
     </ScrollArea>
   );
 }
@@ -27,7 +99,7 @@ export function FieldLabel({
   label,
   labelIcon,
   el,
-  type,
+  type: _type,
   readOnly,
   className,
 }: {
