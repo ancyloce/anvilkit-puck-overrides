@@ -87,10 +87,8 @@ export const Header = () => {
             <DropdownMenu>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <DropdownMenuTrigger>
-                    <Button variant="ghost" size="icon" aria-label="Export">
-                      <Download className="h-4 w-4" />
-                    </Button>
+                  <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label="Export" />}>
+                    <Download className="h-4 w-4" />
                   </DropdownMenuTrigger>
                 </TooltipTrigger>
                 <TooltipContent>Export</TooltipContent>

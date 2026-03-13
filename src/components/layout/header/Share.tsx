@@ -50,11 +50,9 @@ export const Share = () => {
 
   return (
     <Popover>
-      <PopoverTrigger>
-        <Button size="sm" variant="outline">
-          <Link2 className="h-4 w-4" />
-          Share
-        </Button>
+      <PopoverTrigger render={<Button size="sm" variant="outline" />}>
+        <Link2 className="h-4 w-4" />
+        Share
       </PopoverTrigger>
       <PopoverPanel side="bottom" align="end" className="w-80 flex flex-col gap-3">
         <PopoverTitle className="text-base font-medium">Share</PopoverTitle>

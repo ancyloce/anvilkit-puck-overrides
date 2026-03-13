@@ -29,7 +29,7 @@ const [currentUser, ...others] = AVATARS;
 export const CollaboratorsPopover = () => {
   return (
     <Popover>
-      <PopoverTrigger>
+      <PopoverTrigger render={<div />} nativeButton={false}>
         <button className="rounded-full ring-2 ring-background focus:outline-none focus-visible:ring-primary">
           <Avatar className="size-6">
             <AvatarImage src={currentUser.src} />
