@@ -5,6 +5,8 @@ import { Header } from "./header/Header";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStore } from "zustand";
 import { uiStore } from "@/store";
+import { ImageLibrary } from "./sidebar/library/ImageLibrary";
+import { CopyLibrary } from "./sidebar/library/CopyLibrary";
 import type { ReactElement } from "react";
 
 interface EditorLayoutProps {
@@ -22,6 +24,8 @@ export const EditorLayout = ({ aiPanel }: EditorLayoutProps) => {
           <div className="relative h-full flex flex-col overflow-x-hidden overflow-y-auto border-r border-neutral-200 dark:border-neutral-800/80 w-[240px]">
             {activeTab === "insert" && <Puck.Components />}
             {activeTab === "layer" && <Puck.Outline />}
+            {activeTab === "image" && <ImageLibrary />}
+            {activeTab === "text" && <CopyLibrary />}
             {activeTab === "copilot" && aiPanel}
           </div>
           <div className="flex-1 h-full overflow-hidden">
