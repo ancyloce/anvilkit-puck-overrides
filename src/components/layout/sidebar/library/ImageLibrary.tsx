@@ -13,7 +13,7 @@ const DEFAULT_SEEDS = [
   "architecture", "animals", "technology", "minimal",
 ];
 
-function picsumUrl(seed: string, w = 200, h = 150): string {
+function picsumUrl(seed: string, w = 960, h = 960): string {
   return `https://picsum.photos/seed/${encodeURIComponent(seed)}/${w}/${h}`;
 }
 

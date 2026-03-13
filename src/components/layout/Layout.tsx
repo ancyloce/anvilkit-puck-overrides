@@ -2,7 +2,6 @@ import { motion } from "motion/react";
 import { Aside } from "./sidebar/Aside";
 import { Puck } from "@puckeditor/core";
 import { Header } from "./header/Header";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStore } from "zustand";
 import { uiStore } from "@/store";
 import { ImageLibrary } from "./sidebar/library/ImageLibrary";
@@ -29,9 +28,7 @@ export const EditorLayout = ({ aiPanel }: EditorLayoutProps) => {
             {activeTab === "copilot" && aiPanel}
           </div>
           <div className="flex-1 h-full overflow-hidden">
-            <ScrollArea className="h-full">
-              <Puck.Preview></Puck.Preview>
-            </ScrollArea>
+            <Puck.Preview></Puck.Preview>
           </div>
           <div className="border-l border-neutral-200 dark:border-neutral-800/80  w-[240px]">
             <Puck.Fields></Puck.Fields>
