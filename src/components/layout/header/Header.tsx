@@ -12,6 +12,7 @@ import { usePuck } from "@puckeditor/core";
 import { Separator } from "@/components/ui/separator";
 import { Share } from "./Share";
 import { CollaboratorsPopover } from "./CollaboratorsPopover";
+import { useMsg } from "@/store/hooks";
 import {
   Tooltip,
   TooltipContent,
@@ -27,6 +28,13 @@ import {
 
 export const Header = () => {
   const { history, appState } = usePuck();
+  const publish = useMsg("header.publish");
+  const undo = useMsg("header.undo");
+  const undoTooltip = useMsg("header.undo.tooltip");
+  const redo = useMsg("header.redo");
+  const redoTooltip = useMsg("header.redo.tooltip");
+  const exportLabel = useMsg("header.export");
+  const exportJson = useMsg("header.export.json");
 
   return (
     <TooltipProvider>
@@ -51,12 +59,12 @@ export const Header = () => {
                   size="icon"
                   disabled={!history.hasPast}
                   onClick={() => history.back()}
-                  aria-label="Undo"
+                  aria-label={undo}
                 >
                   <Undo2 className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
+              <TooltipContent>{undoTooltip}</TooltipContent>
             </Tooltip>
 
             <Tooltip>
@@ -66,12 +74,12 @@ export const Header = () => {
                   size="icon"
                   disabled={!history.hasFuture}
                   onClick={() => history.forward()}
-                  aria-label="Redo"
+                  aria-label={redo}
                 >
                   <Redo2 className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Redo (Ctrl+Y)</TooltipContent>
+              <TooltipContent>{redoTooltip}</TooltipContent>
             </Tooltip>
 
             <Separator orientation="vertical" className="h-5 mx-1" />
@@ -87,11 +95,11 @@ export const Header = () => {
             <DropdownMenu>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label="Export" />}>
+                  <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label={exportLabel} />}>
                     <Download className="h-4 w-4" />
                   </DropdownMenuTrigger>
                 </TooltipTrigger>
-                <TooltipContent>Export</TooltipContent>
+                <TooltipContent>{exportLabel}</TooltipContent>
               </Tooltip>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
@@ -106,7 +114,7 @@ export const Header = () => {
                     URL.revokeObjectURL(url);
                   }}
                 >
-                  <FileDown className="h-4 w-4" /> Export JSON
+                  <FileDown className="h-4 w-4" /> {exportJson}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -115,12 +123,12 @@ export const Header = () => {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="sm" aria-label="Publish">
+                <Button size="sm" aria-label={publish}>
                   <Send className="h-4 w-4" />
-                  Publish
+                  {publish}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Publish</TooltipContent>
+              <TooltipContent>{publish}</TooltipContent>
             </Tooltip>
           </div>
         </div>

@@ -3,6 +3,7 @@ import * as React from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useMsg } from "@/store/hooks";
 
 // Module-level variable shared with CanvasIframe (same bundle, same origin)
 export let pendingImageSrc: string | null = null;
@@ -85,6 +86,8 @@ export function ImageLibrary({
   const [items, setItems] = React.useState<ImageItem[]>(
     () => customImages ?? getDefaultImages(effectiveSeeds),
   );
+  const libraryTitle = useMsg("image-library.title");
+  const searchPlaceholder = useMsg("image-library.search.placeholder");
 
   React.useEffect(() => {
     const t = setTimeout(() => setCommitted(query.trim()), 400);
@@ -137,14 +140,14 @@ export function ImageLibrary({
   return (
     <div className="flex flex-col h-full">
       <div className="px-3 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        Image Library
+        {libraryTitle}
       </div>
       <div className="p-2">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             className="pl-8"
-            placeholder="Search images..."
+            placeholder={searchPlaceholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />

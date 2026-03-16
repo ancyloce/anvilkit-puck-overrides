@@ -72,9 +72,9 @@ export function Studio({
   const uiStore = React.useRef(createEditorUiStore(storeId ?? "default")).current;
   const i18nStore = React.useRef(
     createEditorI18nStore({
-      locale: locale ?? "en",
+      locale: locale ?? "zh",
       messages: messages ?? defaultMessages,
-    })
+    }),
   ).current;
 
   const aiPlugin = React.useMemo(

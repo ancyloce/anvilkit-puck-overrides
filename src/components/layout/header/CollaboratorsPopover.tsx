@@ -8,6 +8,7 @@ import {
   PopoverTitle,
 } from '@/components/animate-ui/components/base/popover';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useMsg } from '@/store/hooks';
 
 const AVATARS = [
   {
@@ -27,6 +28,7 @@ const AVATARS = [
 const [currentUser, ...others] = AVATARS;
 
 export const CollaboratorsPopover = () => {
+  const collaboratorsTitle = useMsg("collaborators.title");
   return (
     <Popover>
       <PopoverTrigger render={<div />} nativeButton={false}>
@@ -38,7 +40,7 @@ export const CollaboratorsPopover = () => {
         </button>
       </PopoverTrigger>
       <PopoverPanel side="bottom" align="end" className="w-64 flex flex-col gap-3">
-        <PopoverTitle className="text-sm font-medium">Collaborators</PopoverTitle>
+        <PopoverTitle className="text-sm font-medium">{collaboratorsTitle}</PopoverTitle>
         <div className="flex flex-col gap-2">
           {[currentUser, ...others].map((user) => (
             <div key={user.fallback} className="flex items-center gap-3">

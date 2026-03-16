@@ -3,6 +3,7 @@ import * as React from "react";
 import { Search, Type } from "lucide-react";
 import { Input } from "../../../ui/input";
 import { ScrollArea } from "../../../ui/scroll-area";
+import { useMsg } from "@/store/hooks";
 
 // Ghost element shown while dragging
 let ghostEl: HTMLDivElement | null = null;
@@ -109,6 +110,8 @@ export function CopyLibrary({
   const activeSnippets = items ?? DEFAULT_SNIPPETS;
   const categories = Array.from(new Set(activeSnippets.map((s) => s.category)));
   const [query, setQuery] = React.useState("");
+  const libraryTitle = useMsg("copy-library.title");
+  const searchPlaceholder = useMsg("copy-library.search.placeholder");
 
   const filtered = query.trim()
     ? activeSnippets.filter(
@@ -156,14 +159,14 @@ export function CopyLibrary({
   return (
     <div className="flex flex-col h-full">
       <div className="px-3 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        Copy Library
+        {libraryTitle}
       </div>
       <div className="p-2">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             className="pl-8"
-            placeholder="Search copy..."
+            placeholder={searchPlaceholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />

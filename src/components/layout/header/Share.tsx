@@ -12,34 +12,42 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Collaborators } from './Collaborators';
+import { useMsg } from '@/store/hooks';
 
 type Access = 'private' | 'anyone-view' | 'anyone-edit';
-
-const ACCESS_OPTIONS: { value: Access; label: string; description: string; icon: React.ReactNode }[] = [
-  {
-    value: 'private',
-    label: 'Private',
-    description: 'Only invited people can access',
-    icon: <Lock className="w-4 h-4" />,
-  },
-  {
-    value: 'anyone-view',
-    label: 'Anyone with link can view',
-    description: 'Anyone with the link can view',
-    icon: <Globe className="w-4 h-4" />,
-  },
-  {
-    value: 'anyone-edit',
-    label: 'Anyone with link can edit',
-    description: 'Anyone with the link can edit',
-    icon: <Users className="w-4 h-4" />,
-  },
-];
 
 export const Share = () => {
   const [access, setAccess] = React.useState<Access>('private');
   const [copied, setCopied] = React.useState(false);
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+  const shareButton = useMsg('share.button');
+  const shareTitle = useMsg('share.title');
+  const peopleWithAccess = useMsg('share.people-with-access');
+  const generalAccess = useMsg('share.general-access');
+  const copyLabel = useMsg('share.copy');
+  const copiedLabel = useMsg('share.copied');
+
+  const ACCESS_OPTIONS: { value: Access; label: string; description: string; icon: React.ReactNode }[] = [
+    {
+      value: 'private',
+      label: useMsg('share.access.private.label'),
+      description: useMsg('share.access.private.description'),
+      icon: <Lock className="w-4 h-4" />,
+    },
+    {
+      value: 'anyone-view',
+      label: useMsg('share.access.anyone-view.label'),
+      description: useMsg('share.access.anyone-view.description'),
+      icon: <Globe className="w-4 h-4" />,
+    },
+    {
+      value: 'anyone-edit',
+      label: useMsg('share.access.anyone-edit.label'),
+      description: useMsg('share.access.anyone-edit.description'),
+      icon: <Users className="w-4 h-4" />,
+    },
+  ];
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {
@@ -52,14 +60,14 @@ export const Share = () => {
     <Popover>
       <PopoverTrigger render={<Button size="sm" variant="outline" />}>
         <Link2 className="h-4 w-4" />
-        Share
+        {shareButton}
       </PopoverTrigger>
       <PopoverPanel side="bottom" align="end" className="w-80 flex flex-col gap-3">
-        <PopoverTitle className="text-base font-medium">Share</PopoverTitle>
+        <PopoverTitle className="text-base font-medium">{shareTitle}</PopoverTitle>
 
         {/* Collaborators */}
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">People with access</span>
+          <span className="text-sm text-muted-foreground">{peopleWithAccess}</span>
           <Collaborators />
         </div>
 
@@ -67,7 +75,7 @@ export const Share = () => {
 
         {/* Access level */}
         <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium">General access</span>
+          <span className="text-sm font-medium">{generalAccess}</span>
           {ACCESS_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -95,7 +103,7 @@ export const Share = () => {
           <Input readOnly value={shareUrl} className="flex-1 text-xs" />
           <Button size="sm" variant="outline" onClick={handleCopy} className="shrink-0">
             {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
-            {copied ? 'Copied' : 'Copy'}
+            {copied ? copiedLabel : copyLabel}
           </Button>
         </div>
       </PopoverPanel>
