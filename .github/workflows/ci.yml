@@ -69,6 +69,8 @@ jobs:
           path: dist/
 
       - name: Publish
-        run: pnpm publish --no-git-checks --access public
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" >> ~/.npmrc
+          pnpm publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
