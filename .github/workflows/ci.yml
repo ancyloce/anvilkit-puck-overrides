@@ -69,8 +69,7 @@ jobs:
           path: dist/
 
       - name: Publish
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" >> "${NPM_CONFIG_USERCONFIG}"
-          pnpm publish --no-git-checks
+        run: pnpm publish --no-git-checks
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+          NPM_CONFIG__AUTHTOKEN: ${{ secrets.NPM_TOKEN }}
