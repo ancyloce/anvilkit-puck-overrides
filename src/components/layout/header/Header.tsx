@@ -57,14 +57,14 @@ export const Header = () => {
             <AnimatedAsana className="text-white text-2xl" />
           </div>
         </div>
-        <div className="flex flex-1 w-full px-2">
+        <div className="relative flex flex-1 w-full px-2">
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="flex items-center justify-center gap-1 flex-1">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-sm font-medium">
             {appState?.data?.root?.props?.title || ""}
           </div>
-          <div className="flex items-center justify-center gap-2 h-full">
+          <div className="flex items-center justify-center gap-2 h-full ml-auto">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
