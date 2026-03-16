@@ -1,48 +1,39 @@
-import { createStore } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
+import { createEditorUiStore as _createEditorUiStore } from "./ui";
 
-interface DrawerSlice {
-  drawerSearch: string;
-  setDrawerSearch: (q: string) => void;
-  drawerCollapsed: Record<string, boolean>;
-  toggleDrawerGroup: (group: string) => void;
-}
+// Store factories
+export { createEditorUiStore } from "./ui";
+export type { EditorUiStore, EditorUiStoreApi } from "./ui";
 
-interface AsideSlice {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-}
+export { createEditorI18nStore } from "./i18n";
+export type { EditorI18nStore, EditorI18nStoreApi, Locale, Messages } from "./i18n";
 
-interface OutlineSlice {
-  outlineExpanded: Record<string, boolean>;
-  toggleOutlineItem: (id: string) => void;
-}
+// Context providers + hooks that return the store API
+export { EditorUiStoreProvider, useEditorUiStoreApi } from "./ui-context";
+export { EditorI18nStoreProvider, useEditorI18nStoreApi } from "./i18n-context";
 
-type UIStore = DrawerSlice & OutlineSlice & AsideSlice;
+// Named component hooks
+export {
+  useActiveTab,
+  useSetActiveTab,
+  useDrawerSearch,
+  useSetDrawerSearch,
+  useDrawerCollapsed,
+  useToggleDrawerGroup,
+  useOutlineExpanded,
+  useToggleOutlineItem,
+  useMsg,
+  useLocale,
+  useSetLocale,
+} from "./hooks";
 
-export const uiStore = createStore<UIStore>()(
-  subscribeWithSelector((set) => ({
-    drawerSearch: "",
-    setDrawerSearch: (q) => set({ drawerSearch: q }),
-    drawerCollapsed: {},
-    toggleDrawerGroup: (group) =>
-      set((s) => ({
-        drawerCollapsed: {
-          ...s.drawerCollapsed,
-          [group]: !s.drawerCollapsed[group],
-        },
-      })),
-    outlineExpanded: {},
-    toggleOutlineItem: (id) =>
-      set((s) => ({
-        outlineExpanded: {
-          ...s.outlineExpanded,
-          [id]: !s.outlineExpanded[id],
-        },
-      })),
-    activeTab: "insert",
-    setActiveTab: (tab) => set({ activeTab: tab }),
-  }))
-);
+// Default messages
+export { defaultMessages } from "./i18n-defaults";
 
-export type { UIStore };
+/**
+ * @deprecated Use createEditorUiStore() via EditorUiStoreProvider instead.
+ * This singleton will be removed in the next minor version.
+ */
+export const uiStore = _createEditorUiStore("default");
+
+/** @deprecated Use EditorUiStore instead. */
+export type { EditorUiStore as UIStore } from "./ui";
