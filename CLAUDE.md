@@ -1,4 +1,4 @@
-# CLAUDE.md — @anvilkit/puck-overrides
+# CLAUDE.md — @anvilkit/puck-studio
 
 AI-assisted development guide for this codebase.
 
@@ -6,7 +6,7 @@ AI-assisted development guide for this codebase.
 
 ## Project Overview
 
-`@anvilkit/puck-overrides` is a published npm package that provides drop-in Shadcn UI overrides for all 15 Puck Editor surfaces. It is TypeScript-first, ships ESM + CJS + `.d.ts`, and has zero Next.js at runtime (`next` is a devDependency for the local demo app only).
+`@anvilkit/puck-studio` is a published npm package that provides drop-in Shadcn UI overrides for all 15 Puck Editor surfaces. It is TypeScript-first, ships ESM + CJS + `.d.ts`, and has zero Next.js at runtime (`next` is a devDependency for the local demo app only).
 
 **Hard constraint:** Nothing in `src/` may import from `next`. The demo lives in `app/` only.
 

@@ -1,7 +1,7 @@
-# @anvilkit/puck-overrides
+# @anvilkit/puck-studio
 
-[![npm](https://img.shields.io/npm/v/@anvilkit/puck-overrides)](https://www.npmjs.com/package/@anvilkit/puck-overrides)
-[![license](https://img.shields.io/npm/l/@anvilkit/puck-overrides)](./LICENSE)
+[![npm](https://img.shields.io/npm/v/@anvilkit/puck-studio)](https://www.npmjs.com/package/@anvilkit/puck-studio)
+[![license](https://img.shields.io/npm/l/@anvilkit/puck-studio)](./LICENSE)
 [![react](https://img.shields.io/badge/react-19-blue)](https://react.dev)
 [![puck](https://img.shields.io/badge/puck-%5E0.21.1-purple)](https://puckeditor.com)
 
@@ -15,7 +15,7 @@ Drop-in Shadcn UI overrides for all 15 Puck Editor surfaces — enterprise-ready
 
 Puck Editor ships with a minimal default UI that works for prototypes but falls short in enterprise products — no design system consistency, no accessible components, no Tailwind integration.
 
-`@anvilkit/puck-overrides` solves this with a single drop-in `overrides` object built on Shadcn UI, @base-ui/react primitives, and Tailwind v4. All 15 override surfaces are covered. Components are **bundled** into the package — you do not run a Shadcn CLI to copy them.
+`@anvilkit/puck-studio` solves this with a single drop-in `overrides` object built on Shadcn UI, @base-ui/react primitives, and Tailwind v4. All 15 override surfaces are covered. Components are **bundled** into the package — you do not run a Shadcn CLI to copy them.
 
 **Key value props:**
 
@@ -80,7 +80,7 @@ Custom drag-drop events (window):
 ## Installation
 
 ```bash
-pnpm add @anvilkit/puck-overrides
+pnpm add @anvilkit/puck-studio
 ```
 
 > `next` is a devDependency used only for the local demo app. It is not included in the published bundle.
@@ -108,13 +108,13 @@ The package ships both ESM and CJS builds. No additional bundler configuration i
 ### Import the CSS
 
 ```ts
-import "@anvilkit/puck-overrides/styles.css";
+import "@anvilkit/puck-studio/styles.css";
 ```
 
 ### Pattern 1 — Raw overrides object
 
 ```tsx
-import { puckOverrides } from "@anvilkit/puck-overrides";
+import { puckOverrides } from "@anvilkit/puck-studio";
 import { Puck } from "@puckeditor/core";
 
 export default function Editor({ config, data, onPublish }) {
@@ -132,7 +132,7 @@ export default function Editor({ config, data, onPublish }) {
 ### Pattern 2 — Studio convenience wrapper
 
 ```tsx
-import { Studio } from "@anvilkit/puck-overrides";
+import { Studio } from "@anvilkit/puck-studio";
 
 export default function Editor({ config, data, onPublish }) {
   return (
@@ -156,7 +156,7 @@ export default function Editor({ config, data, onPublish }) {
 ### Image Library
 
 ```tsx
-import type { ImagesProps, ImageItem } from "@anvilkit/puck-overrides";
+import type { ImagesProps, ImageItem } from "@anvilkit/puck-studio";
 
 // Option A — replace the default picsum seed list
 <Studio
@@ -185,7 +185,7 @@ When `items` is provided the search input is hidden (external data is static). W
 ### Copy Library
 
 ```tsx
-import type { CopywritingProps, CopywritingItem } from "@anvilkit/puck-overrides";
+import type { CopywritingProps, CopywritingItem } from "@anvilkit/puck-studio";
 
 const brandCopy: CopywritingItem[] = [
   { category: "Headlines", label: "Brand promise", text: "Built for builders." },

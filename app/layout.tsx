@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Puck Overrides Demo",
-  description: "Demo for @anvilkit/puck-overrides",
+  description: "Demo for @anvilkit/puck-studio",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
