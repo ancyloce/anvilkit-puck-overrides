@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import type { Config, Data } from "@puckeditor/core";
-import { Studio } from "../src/components/editor/Studio";
+import { Studio } from "../src";
 import { Type } from "lucide-react";
 
 const config: Config = {
