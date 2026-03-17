@@ -4,9 +4,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMsg } from "@/store/hooks";
-
-// Module-level variable shared with CanvasIframe (same bundle, same origin)
-export let pendingImageSrc: string | null = null;
+import { useGhostDrag } from "@/features/library-dnd/useGhostDrag";
 
 export interface ImageItem {
   id: string;
@@ -47,10 +45,7 @@ function getSearchImages(query: string): ImageItem[] {
   }));
 }
 
-// Ghost element shown while dragging
-let ghostEl: HTMLDivElement | null = null;
-
-function createGhost(src: string): HTMLDivElement {
+function createImageGhost(src: string): HTMLDivElement {
   const el = document.createElement("div");
   el.style.cssText = `
     position: fixed; top: -9999px; left: -9999px; z-index: 99999;
@@ -63,17 +58,6 @@ function createGhost(src: string): HTMLDivElement {
   el.appendChild(img);
   document.body.appendChild(el);
   return el;
-}
-
-function moveGhost(x: number, y: number) {
-  if (!ghostEl) return;
-  ghostEl.style.left = `${x + 12}px`;
-  ghostEl.style.top = `${y + 12}px`;
-}
-
-function removeGhost() {
-  ghostEl?.remove();
-  ghostEl = null;
 }
 
 export function ImageLibrary({
@@ -89,53 +73,21 @@ export function ImageLibrary({
   const libraryTitle = useMsg("image-library.title");
   const searchPlaceholder = useMsg("image-library.search.placeholder");
 
+  const { startDrag } = useGhostDrag({
+    createGhostEl: createImageGhost,
+  });
+
   React.useEffect(() => {
     const t = setTimeout(() => setCommitted(query.trim()), 400);
     return () => clearTimeout(t);
   }, [query]);
 
   React.useEffect(() => {
-    if (customImages) return; // external data — don't override on search
+    if (customImages) return;
     setItems(
       committed ? getSearchImages(committed) : getDefaultImages(effectiveSeeds),
     );
   }, [committed, customImages, effectiveSeeds]);
-
-  function handlePointerDown(
-    e: React.PointerEvent<HTMLDivElement>,
-    src: string,
-  ) {
-    e.stopPropagation();
-    e.currentTarget.setPointerCapture(e.pointerId);
-
-    pendingImageSrc = src;
-    ghostEl = createGhost(src);
-    moveGhost(e.clientX, e.clientY);
-    window.dispatchEvent(
-      new CustomEvent("anvilkit:librarydragstart", {
-        detail: { type: "image" },
-      }),
-    );
-
-    function onMove(ev: PointerEvent) {
-      moveGhost(ev.clientX, ev.clientY);
-    }
-
-    function onUp(ev: PointerEvent) {
-      removeGhost();
-      pendingImageSrc = null;
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.dispatchEvent(
-        new CustomEvent("anvilkit:imagedrop", {
-          detail: { src, clientX: ev.clientX, clientY: ev.clientY },
-        }),
-      );
-    }
-
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-  }
 
   return (
     <div className="flex flex-col h-full">
@@ -155,10 +107,10 @@ export function ImageLibrary({
       </div>
       <ScrollArea className="flex-1">
         <div className="p-2 grid grid-cols-2 gap-2">
-          {items.map((item, i) => (
+          {items.map((item) => (
             <div
-              key={`${item.src}-${i}`}
-              onPointerDown={(e) => handlePointerDown(e, item.src)}
+              key={item.id}
+              onPointerDown={(e) => startDrag(e, "image", item.src)}
               className="rounded-md overflow-hidden border border-border bg-muted/40 cursor-grab select-none hover:ring-2 hover:ring-primary/50 active:cursor-grabbing transition-all"
             >
               <img

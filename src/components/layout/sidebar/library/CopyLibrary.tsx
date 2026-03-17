@@ -1,14 +1,39 @@
 "use client";
 import * as React from "react";
 import { Search, Type } from "lucide-react";
-import { Input } from "../../../ui/input";
-import { ScrollArea } from "../../../ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMsg } from "@/store/hooks";
+import { useGhostDrag } from "@/features/library-dnd/useGhostDrag";
 
-// Ghost element shown while dragging
-let ghostEl: HTMLDivElement | null = null;
+export interface CopywritingItem {
+  label: string;
+  text: string;
+  category: string;
+}
 
-function createGhost(text: string): HTMLDivElement {
+export interface CopywritingProps {
+  items?: CopywritingItem[];
+}
+
+const DEFAULT_SNIPPETS: CopywritingItem[] = [
+  { category: "Headlines", label: "Bold statement", text: "The Future Starts Here" },
+  { category: "Headlines", label: "Question hook", text: "Ready to Transform Your Business?" },
+  { category: "Headlines", label: "Value prop", text: "Simple, Powerful, Built for Teams" },
+  { category: "Headlines", label: "Action-led", text: "Ship Faster. Break Less. Sleep Better." },
+  { category: "Subheadings", label: "Feature intro", text: "Everything you need, nothing you don't." },
+  { category: "Subheadings", label: "Social proof", text: "Trusted by over 10,000 teams worldwide." },
+  { category: "Subheadings", label: "CTA support", text: "Get started in minutes — no credit card required." },
+  { category: "Body", label: "Product description", text: "Our platform helps teams collaborate in real time, ship products faster, and stay aligned across every stage of the process." },
+  { category: "Body", label: "Feature benefit", text: "With built-in analytics and smart automation, you can focus on what matters most — building great products." },
+  { category: "Body", label: "About us", text: "We're a small team on a big mission: to make software development feel effortless for everyone." },
+  { category: "CTAs", label: "Primary", text: "Get Started Free" },
+  { category: "CTAs", label: "Secondary", text: "Learn More" },
+  { category: "CTAs", label: "Soft sell", text: "See How It Works" },
+  { category: "CTAs", label: "Urgency", text: "Start Your Free Trial Today" },
+];
+
+function createTextGhost(text: string): HTMLDivElement {
   const el = document.createElement("div");
   el.style.cssText = `
     position: fixed; top: -9999px; left: -9999px; z-index: 99999;
@@ -22,96 +47,14 @@ function createGhost(text: string): HTMLDivElement {
   return el;
 }
 
-function moveGhost(x: number, y: number) {
-  if (!ghostEl) return;
-  ghostEl.style.left = `${x + 12}px`;
-  ghostEl.style.top = `${y + 12}px`;
-}
-
-function removeGhost() {
-  ghostEl?.remove();
-  ghostEl = null;
-}
-
-export interface CopywritingItem {
-  label: string;
-  text: string;
-  category: string;
-}
-
-export interface CopywritingProps {
-  items?: CopywritingItem[];
-}
-
-const DEFAULT_SNIPPETS: CopywritingItem[] = [
-  // Headlines
-  {
-    category: "Headlines",
-    label: "Bold statement",
-    text: "The Future Starts Here",
-  },
-  {
-    category: "Headlines",
-    label: "Question hook",
-    text: "Ready to Transform Your Business?",
-  },
-  {
-    category: "Headlines",
-    label: "Value prop",
-    text: "Simple, Powerful, Built for Teams",
-  },
-  {
-    category: "Headlines",
-    label: "Action-led",
-    text: "Ship Faster. Break Less. Sleep Better.",
-  },
-  // Subheadings
-  {
-    category: "Subheadings",
-    label: "Feature intro",
-    text: "Everything you need, nothing you don't.",
-  },
-  {
-    category: "Subheadings",
-    label: "Social proof",
-    text: "Trusted by over 10,000 teams worldwide.",
-  },
-  {
-    category: "Subheadings",
-    label: "CTA support",
-    text: "Get started in minutes — no credit card required.",
-  },
-  // Body
-  {
-    category: "Body",
-    label: "Product description",
-    text: "Our platform helps teams collaborate in real time, ship products faster, and stay aligned across every stage of the process.",
-  },
-  {
-    category: "Body",
-    label: "Feature benefit",
-    text: "With built-in analytics and smart automation, you can focus on what matters most — building great products.",
-  },
-  {
-    category: "Body",
-    label: "About us",
-    text: "We're a small team on a big mission: to make software development feel effortless for everyone.",
-  },
-  // CTAs
-  { category: "CTAs", label: "Primary", text: "Get Started Free" },
-  { category: "CTAs", label: "Secondary", text: "Learn More" },
-  { category: "CTAs", label: "Soft sell", text: "See How It Works" },
-  { category: "CTAs", label: "Urgency", text: "Start Your Free Trial Today" },
-];
-
-export function CopyLibrary({
-  items,
-}: CopywritingProps = {}): React.ReactElement {
+export function CopyLibrary({ items }: CopywritingProps = {}): React.ReactElement {
   const activeSnippets = items ?? DEFAULT_SNIPPETS;
   const categories = Array.from(new Set(activeSnippets.map((s) => s.category)));
   const [query, setQuery] = React.useState("");
   const libraryTitle = useMsg("copy-library.title");
   const searchPlaceholder = useMsg("copy-library.search.placeholder");
+
+  const { startDrag } = useGhostDrag({ createGhostEl: createTextGhost });
 
   const filtered = query.trim()
     ? activeSnippets.filter(
@@ -121,40 +64,6 @@ export function CopyLibrary({
           s.category.toLowerCase().includes(query.toLowerCase()),
       )
     : activeSnippets;
-
-  function handlePointerDown(
-    e: React.PointerEvent<HTMLDivElement>,
-    text: string,
-  ) {
-    e.stopPropagation();
-    e.currentTarget.setPointerCapture(e.pointerId);
-
-    ghostEl = createGhost(text);
-    moveGhost(e.clientX, e.clientY);
-    window.dispatchEvent(
-      new CustomEvent("anvilkit:librarydragstart", {
-        detail: { type: "text" },
-      }),
-    );
-
-    function onMove(ev: PointerEvent) {
-      moveGhost(ev.clientX, ev.clientY);
-    }
-
-    function onUp(ev: PointerEvent) {
-      removeGhost();
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.dispatchEvent(
-        new CustomEvent("anvilkit:textdrop", {
-          detail: { text, clientX: ev.clientX, clientY: ev.clientY },
-        }),
-      );
-    }
-
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-  }
 
   return (
     <div className="flex flex-col h-full">
@@ -175,10 +84,10 @@ export function CopyLibrary({
       <ScrollArea className="flex-1">
         <div className="p-2 flex flex-col gap-4">
           {(query.trim() ? [null] : categories).map((cat) => {
-            const items = cat
+            const snippets = cat
               ? filtered.filter((s) => s.category === cat)
               : filtered;
-            if (!items.length) return null;
+            if (!snippets.length) return null;
             return (
               <div key={cat ?? "results"}>
                 {cat && (
@@ -188,10 +97,10 @@ export function CopyLibrary({
                   </div>
                 )}
                 <div className="flex flex-col gap-1">
-                  {items.map((snippet, i) => (
+                  {snippets.map((snippet) => (
                     <div
-                      key={i}
-                      onPointerDown={(e) => handlePointerDown(e, snippet.text)}
+                      key={`${snippet.category}-${snippet.label}`}
+                      onPointerDown={(e) => startDrag(e, "text", snippet.text)}
                       className="rounded-md border border-border bg-muted/40 px-2.5 py-2 cursor-grab select-none hover:bg-muted hover:ring-1 hover:ring-primary/40 active:cursor-grabbing transition-all"
                     >
                       <div className="text-xs font-medium text-foreground/70 mb-0.5">
