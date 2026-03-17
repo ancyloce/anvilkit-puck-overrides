@@ -15,7 +15,7 @@ import { usePuck } from "@puckeditor/core";
 import { Separator } from "@/components/ui/separator";
 import { Share } from "./Share";
 import { CollaboratorsPopover } from "./CollaboratorsPopover";
-import { useMsg, useTheme, useToggleTheme } from "@/store/hooks";
+import { useMsg, useTheme, useToggleTheme, useThemeSync } from "@/store/hooks";
 import {
   Tooltip,
   TooltipContent,
@@ -44,10 +44,7 @@ export const Header = () => {
   const themeDarkLabel = useMsg("header.theme.dark");
   const themeLabel = theme === "dark" ? themeLightLabel : themeDarkLabel;
 
-  // Sync class on mount for persisted theme
-  React.useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  }, []);
+  useThemeSync();
 
   return (
     <TooltipProvider>

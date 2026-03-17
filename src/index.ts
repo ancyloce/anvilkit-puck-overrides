@@ -1,12 +1,27 @@
+// Runtime exports
 export { puckOverrides } from "./components/overrides/index";
 export { Studio } from "./components/editor/Studio";
-export type { StudioProps, ImagesProps, CopywritingProps } from "./components/editor/Studio";
-export type { ImageItem } from "./components/layout/sidebar/library/ImageLibrary";
-export type { CopywritingItem } from "./components/layout/sidebar/library/CopyLibrary";
 
-// New store API
+// Public types — all consumer-facing types live in src/types/public.ts
+export type {
+  StudioProps,
+  ImagesProps,
+  ImageItem,
+  CopywritingProps,
+  CopywritingItem,
+  EditorUiStore,
+  EditorUiStoreApi,
+  ActiveTab,
+  EditorI18nStoreApi,
+  Locale,
+  Messages,
+} from "./types/public";
+
+// Store factories and context (advanced / escape-hatch usage)
 export { createEditorUiStore, createEditorI18nStore } from "./store/index";
-export type { EditorUiStore, EditorUiStoreApi, EditorI18nStoreApi, Locale, Messages } from "./store/index";
+export { EditorUiStoreProvider, useEditorUiStoreApi } from "./store/ui-context";
+export { EditorI18nStoreProvider, useEditorI18nStoreApi } from "./store/i18n-context";
+export { defaultMessages } from "./store/i18n-defaults";
 
 /**
  * @deprecated Use createEditorUiStore() via EditorUiStoreProvider instead.
