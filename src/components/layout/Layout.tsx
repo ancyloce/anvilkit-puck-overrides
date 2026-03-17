@@ -5,8 +5,7 @@ import { Header } from "./header/Header";
 import { useActiveTab } from "@/store/hooks";
 import { ImageLibrary } from "./sidebar/library/ImageLibrary";
 import { CopyLibrary } from "./sidebar/library/CopyLibrary";
-import type { ImagesProps } from "./sidebar/library/ImageLibrary";
-import type { CopywritingProps } from "./sidebar/library/CopyLibrary";
+import type { ImagesProps, CopywritingProps } from "@/types/public";
 import type { ReactElement } from "react";
 
 interface EditorLayoutProps {

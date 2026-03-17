@@ -1,6 +1,5 @@
 import * as React from "react";
 import type { Overrides } from "@puckeditor/core";
-import { EditorHeader, EditorHeaderActions } from "./layout/EditorHeader";
 import { EditorDrawer, EditorComponents } from "./layout/EditorDrawer";
 import { DrawerItem } from "./layout/DrawerItem";
 import { EditorOutline } from "./layout/EditorOutline";
@@ -16,8 +15,6 @@ function PuckRoot({ children }: { children?: React.ReactNode }): React.ReactElem
 }
 
 export const puckOverrides: Partial<Overrides> = {
-  header: EditorHeader,
-  headerActions: EditorHeaderActions,
   drawer: EditorDrawer,
   components: EditorComponents,
   drawerItem: DrawerItem,
@@ -33,8 +30,6 @@ export const puckOverrides: Partial<Overrides> = {
 };
 
 export {
-  EditorHeader,
-  EditorHeaderActions,
   EditorDrawer,
   EditorComponents,
   DrawerItem,
