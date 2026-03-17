@@ -9,11 +9,35 @@ const TooltipProvider = TooltipPrimitive.Provider
 
 const Tooltip = TooltipPrimitive.Root
 
-// @base-ui/react Trigger renders its child natively — asChild is not needed
-// but we accept it to avoid breaking call sites
-function TooltipTrigger({ asChild: _asChild, ...props }: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Trigger> & { asChild?: boolean }) {
-  void _asChild
-  return <TooltipPrimitive.Trigger {...props} />
+type TooltipTriggerProps = React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Trigger> & {
+  asChild?: boolean
+}
+
+// Base UI uses `render` instead of Radix-style `asChild`.
+// Keep `asChild` support here so existing call sites don't render nested buttons.
+function TooltipTrigger({
+  asChild,
+  children,
+  render,
+  ...props
+}: TooltipTriggerProps) {
+  if (render) {
+    return (
+      <TooltipPrimitive.Trigger render={render} {...props}>
+        {children}
+      </TooltipPrimitive.Trigger>
+    )
+  }
+
+  if (asChild && React.Children.count(children) === 1) {
+    const child = React.Children.only(children)
+
+    if (React.isValidElement(child)) {
+      return <TooltipPrimitive.Trigger render={child} {...props} />
+    }
+  }
+
+  return <TooltipPrimitive.Trigger {...props}>{children}</TooltipPrimitive.Trigger>
 }
 
 type TooltipContentProps = React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Popup> & {
