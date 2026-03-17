@@ -1,177 +1,250 @@
 # CLAUDE.md — @anvilkit/puck-studio
 
-AI-assisted development guide for this codebase.
+AI-assisted development guide for this repository.
 
----
+## Snapshot
 
-## Project Overview
+- Publishable library code lives in [`src/`](./src)
+- The local demo app lives in [`app/`](./app)
+- `Studio` is a Puck wrapper plus an opinionated desktop shell, not just an overrides object
+- `puckOverrides` styles core Puck surfaces, while `Header` and `Aside` live outside Puck in the shell
+- Default UI messages are Chinese
+- `uiStore` and the `legacy` entrypoint exist only for backward compatibility
 
-`@anvilkit/puck-studio` is a published npm package that provides drop-in Shadcn UI overrides for all 15 Puck Editor surfaces. It is TypeScript-first, ships ESM + CJS + `.d.ts`, and has zero Next.js at runtime (`next` is a devDependency for the local demo app only).
+Hard constraint:
+Nothing in `src/` may import from `next`. Keep Next.js usage in `app/` only.
 
-**Hard constraint:** Nothing in `src/` may import from `next`. The demo lives in `app/` only.
+## Current Repo Layout
 
----
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                          <Studio />                                  │
-│  props: config, data, onPublish, images?, copywritings?, aiHost?    │
-│                                                                      │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │  <Puck overrides={mergedOverrides} plugins={[aiPlugin]}>     │   │
-│  │                                                              │   │
-│  │  ┌────────────────────────────────────────────────────────┐  │   │
-│  │  │                   <EditorLayout />                     │  │   │
-│  │  │                                                        │  │   │
-│  │  │  ┌──────────────────────────────────────────────────┐  │  │   │
-│  │  │  │                   <Header />                     │  │  │   │
-│  │  │  │    back · title · undo/redo · collab · publish   │  │  │   │
-│  │  │  └──────────────────────────────────────────────────┘  │  │   │
-│  │  │                                                        │  │   │
-│  │  │  ┌──────┐  ┌────────────────┐  ┌────────┐  ┌───────┐  │  │   │
-│  │  │  │Aside │  │ Dynamic Panel  │  │ Canvas │  │Fields │  │  │   │
-│  │  │  │      │  │                │  │        │  │       │  │  │   │
-│  │  │  │insert│  │ insert →       │  │ Puck.  │  │ Puck. │  │  │   │
-│  │  │  │layer │  │  Puck.Comps    │  │Preview │  │Fields │  │  │   │
-│  │  │  │image │  │ layer  →       │  │        │  │       │  │  │   │
-│  │  │  │text  │  │  Puck.Outline  │  │        │  │       │  │  │   │
-│  │  │  │copil.│  │ image  →       │  │        │  │       │  │  │   │
-│  │  │  │      │  │  ImageLibrary  │  │        │  │       │  │  │   │
-│  │  │  │      │  │ text   →       │  │        │  │       │  │  │   │
-│  │  │  │      │  │  CopyLibrary   │  │        │  │       │  │  │   │
-│  │  │  │      │  │ copilot→       │  │        │  │       │  │  │   │
-│  │  │  │      │  │  aiPanel       │  │        │  │       │  │  │   │
-│  │  │  └──────┘  └────────────────┘  └────────┘  └───────┘  │  │   │
-│  │  └────────────────────────────────────────────────────────┘  │   │
-│  └──────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Key Files
-
-| File | Role |
+| Path | Role |
 |---|---|
-| `src/index.ts` | Barrel export — public API |
-| `src/components/editor/Studio.tsx` | Main convenience wrapper |
-| `src/components/layout/Layout.tsx` | `EditorLayout` — 3-panel shell |
-| `src/components/layout/header/Header.tsx` | Header with undo/redo/export/publish |
-| `src/components/layout/sidebar/Aside.tsx` | Vertical tab switcher |
-| `src/components/layout/sidebar/library/ImageLibrary.tsx` | Drag-drop image panel |
-| `src/components/layout/sidebar/library/CopyLibrary.tsx` | Drag-drop text snippets panel |
-| `src/components/overrides/index.tsx` | Assembles `puckOverrides` object |
-| `src/store/index.ts` | Zustand v5 `uiStore` |
-| `tsup.config.ts` | Build config |
+| `src/index.ts` | Canonical public API |
+| `src/index.legacy.ts` | Deprecated compatibility exports |
+| `src/types/public.ts` | Stable public type surface |
+| `src/core/studio/Studio.tsx` | Main `Studio` wrapper |
+| `src/core/studio/layout/Layout.tsx` | Desktop shell composition |
+| `src/core/studio/layout/header/*` | Header chrome, share UI, collaborators UI |
+| `src/core/studio/layout/sidebar/*` | Aside tabs plus image/copy libraries |
+| `src/core/overrides/index.tsx` | Packaged `puckOverrides` object |
+| `src/core/overrides/layout/*` | Drawer, outline, component item overrides |
+| `src/core/overrides/canvas/*` | Preview, iframe bridge, overlay, action bar |
+| `src/core/overrides/fields/*` | Field wrapper plus field type registry |
+| `src/features/library-dnd/*` | Typed drag/drop contract and pure prop replacement helpers |
+| `src/features/theme/useThemeSync.ts` | Theme sync for host document and iframe |
+| `src/store/*` | UI store, i18n store, providers, and hooks |
+| `src/components/ui/*` | Base UI wrappers and shared primitives |
+| `app/page.tsx` | Demo editor page |
+| `app/globals.css` | Demo Tailwind setup and tokens |
 
----
+## Public API
 
-## Public API (`src/index.ts`)
+Root exports from [`src/index.ts`](./src/index.ts):
 
-```ts
-export { puckOverrides }           // Puck overrides object
-export { Studio }                  // Convenience wrapper component
-export type { StudioProps }        // Studio prop types
-export type { ImagesProps }        // Image library config
-export type { CopywritingProps }   // Copy library config
-export type { ImageItem }          // { id, src, alt }
-export type { CopywritingItem }    // { label, text, category }
-export { uiStore }                 // Zustand store instance
-export type { UIStore }            // Store type
+- `Studio`
+- `puckOverrides`
+- `createEditorUiStore`
+- `createEditorI18nStore`
+- `EditorUiStoreProvider`
+- `EditorI18nStoreProvider`
+- `useEditorUiStoreApi`
+- `useEditorI18nStoreApi`
+- `defaultMessages`
+
+Public types re-exported from [`src/types/public.ts`](./src/types/public.ts):
+
+- `StudioProps`
+- `ImagesProps`
+- `ImageItem`
+- `CopywritingProps`
+- `CopywritingItem`
+- `EditorUiStore`
+- `EditorUiStoreApi`
+- `ActiveTab`
+- `EditorI18nStoreApi`
+- `Locale`
+- `Messages`
+
+Compatibility exports:
+
+- `@anvilkit/puck-studio/legacy` exposes deprecated `uiStore` and `UIStore`
+
+Contributor rule:
+If you add or remove anything from the public API, update [`src/types/api.test-d.ts`](./src/types/api.test-d.ts).
+
+## Runtime Architecture
+
+`Studio` currently does the following:
+
+1. Creates a persisted UI store with `createEditorUiStore(storeId ?? "default")`
+2. Creates a persisted i18n store with `createEditorI18nStore({ locale, messages })`
+3. Lazily imports `@puckeditor/plugin-ai` only when `aiHost` is set
+4. Merges overrides in this order:
+   `{ ...(aiPlugin?.overrides ?? {}), ...puckOverrides, ...overrideExtensions }`
+5. Renders `Puck` with [`EditorLayout`](./src/core/studio/layout/Layout.tsx) as children
+
+High-level flow:
+
+```text
+Studio
+  -> UI/i18n providers
+  -> Puck
+     -> merged overrides
+     -> optional AI plugin
+     -> EditorLayout
+        -> Header
+        -> Aside
+        -> left panel content by active tab
+        -> Puck.Preview
+        -> Puck.Fields
 ```
 
----
+Important distinction:
 
-## Zustand Store (`src/store/index.ts`)
+- `Header` and `Aside` are shell components owned by `Studio`
+- `puckOverrides` currently covers only Puck override keys
 
-Three slices in one store, created with `subscribeWithSelector`:
+## Override Coverage
 
-| Slice | State | Actions |
-|---|---|---|
-| `DrawerSlice` | `drawerSearch`, `drawerCollapsed` | `setDrawerSearch`, `toggleDrawerGroup` |
-| `AsideSlice` | `activeTab` (`"insert"│"layer"│"image"│"text"│"copilot"`) | `setActiveTab` |
-| `OutlineSlice` | `outlineExpanded` | `toggleOutlineItem` |
+[`puckOverrides`](./src/core/overrides/index.tsx) currently wires:
 
----
+- `drawer`
+- `components`
+- `drawerItem`
+- `componentItem`
+- `outline`
+- `iframe`
+- `preview`
+- `componentOverlay`
+- `actionBar`
+- `fields`
+- `fieldTypes`
+- `puck`
 
-## Library Drag-Drop Events
+Notes:
 
-Both libraries communicate with the canvas via custom window events:
+- `fieldLabel` exists internally in [`src/core/overrides/fields/FieldWrapper.tsx`](./src/core/overrides/fields/FieldWrapper.tsx) but is not currently included in `puckOverrides`
+- `puck` is just a pass-through root slot
+- `Header` is not implemented as a Puck `header` or `headerActions` override
 
-| Event | Fired when | Detail |
-|---|---|---|
-| `anvilkit:librarydragstart` | pointer-down on any library item | `{ type: "image" \| "text" }` |
-| `anvilkit:imagedrop` | pointer-up after image drag | `{ src, clientX, clientY }` |
-| `anvilkit:textdrop` | pointer-up after text drag | `{ text, clientX, clientY }` |
+## State, Persistence, and i18n
 
-`pendingImageSrc` is a module-level variable in `ImageLibrary.tsx` shared with `CanvasIframe.tsx` (same bundle, same origin).
+UI store in [`src/store/ui.ts`](./src/store/ui.ts):
 
----
+- Active tabs: `insert`, `layer`, `image`, `text`, `copilot`
+- Persists `activeTab`, `drawerCollapsed`, `outlineExpanded`, and `theme`
+- Does not persist `drawerSearch`
+- Uses localStorage key `anvilkit-ui-${storeId}`
 
-## Puck 0.21.1 API Facts
+i18n store in [`src/store/i18n.ts`](./src/store/i18n.ts):
 
-- `usePuck()` takes **no selector** — returns the full `AppStore` directly
-- `history.hasPast` and `history.hasFuture` are **booleans** — do NOT call them as functions
-- Action types are lowercase strings: `"remove"`, `"duplicate"`, `"move"`
-- `RemoveAction`: `{ type: "remove", index: number, zone: string }`
-- `DuplicateAction`: `{ type: "duplicate", sourceIndex: number, sourceZone: string }`
-- `ItemSelector` is NOT exported from `@puckeditor/core` — use `unknown`
-- `RenderFunc` returns `ReactElement` (not `ReactNode`) — all override components must return `ReactElement`
+- Persists only `locale`
+- Replaces `messages` from props on mount/update
+- Uses localStorage key `anvilkit-i18n`
 
-### Override Type Signatures
+Important nuance:
+`storeId` namespaces the UI store only. The i18n store key is global today.
 
-| Surface | Props |
-|---|---|
-| `header` | `{ actions: ReactNode, children: ReactNode }` |
-| `headerActions` | `{ children: ReactNode }` |
-| `drawer/components/outline/preview/puck` | `{ children: ReactNode }` |
-| `drawerItem/componentItem` | `{ children: ReactNode, name: string }` |
-| `iframe` | `{ children: ReactNode, document?: Document }` |
-| `componentOverlay` | `{ children, hover: boolean, isSelected: boolean, componentId: string, componentType: string }` |
-| `actionBar` | `{ children, label?: string, parentAction: ReactNode }` |
-| `fields` | `{ children, isLoading: boolean, itemSelector?: unknown }` |
-| `fieldLabel` | `{ children?, icon?, label: string, el?: "label"│"div", readOnly?, className? }` |
-| `fieldTypes` | `Partial<FieldRenderFunctions>` — components receive `FieldProps & { children, name }` |
+Default messages:
 
----
+- [`src/store/i18n-defaults.ts`](./src/store/i18n-defaults.ts) re-exports the Chinese catalog
+- English messages exist in [`src/i18n/en.ts`](./src/i18n/en.ts) but are not exported from the package root
+- If you add or rename a message key, update both [`src/i18n/zh.ts`](./src/i18n/zh.ts) and [`src/i18n/en.ts`](./src/i18n/en.ts)
 
-## @base-ui/react vs Radix UI
+## Drag-and-Drop Contract
 
-All `src/components/ui/` components use `@base-ui/react` primitives — **not Radix UI**.
+The image and copy libraries do not talk to the canvas directly. They use typed `window` events from [`src/features/library-dnd/drop-contract.ts`](./src/features/library-dnd/drop-contract.ts):
 
-Key differences:
-- **No `asChild` prop** — use `render` prop instead: `<TooltipTrigger render={<Button />} />`
-- `Select.onValueChange` receives `string | null` — guard with `if (v !== null)`
-- `CommandInput` uses `onValueChange` (string), not `onChange` (event)
-- `CommandItem` uses `onSelect`, not `onClick`; use `data-checked` not `selected`
+- `anvilkit:librarydragstart`
+- `anvilkit:imagedrop`
+- `anvilkit:textdrop`
 
----
+Flow:
 
-## Import Path Rules
+1. [`useGhostDrag`](./src/features/library-dnd/useGhostDrag.ts) creates the floating ghost element and dispatches typed events
+2. [`CanvasIframe`](./src/core/overrides/canvas/CanvasIframe.tsx) installs [`useLibraryDropBridge`](./src/core/overrides/canvas/useLibraryDropBridge.ts)
+3. The bridge hit-tests inside the iframe, highlights eligible targets, and dispatches Puck `replace` actions
+4. [`replace-props.ts`](./src/features/library-dnd/replace-props.ts) performs pure image/text replacement heuristics
 
-Relative imports from UI components must follow these rules:
+Testing:
 
-| From | Import `../../ui/` as |
-|---|---|
-| `src/components/overrides/fields/` | `../../ui/` |
-| `src/components/overrides/fields/types/` | `../../../ui/` |
-| `src/components/overrides/canvas/` | `../../ui/` |
-| `src/components/overrides/layout/` | `../../ui/` |
+- Runtime tests for replacement heuristics live in [`src/features/library-dnd/replace-props.test.ts`](./src/features/library-dnd/replace-props.test.ts)
 
-Alias `@/` resolves to `src/` (configured in `tsconfig.json` and `next.config.mjs`).
+## Theme Sync
 
----
+[`useThemeSync`](./src/features/theme/useThemeSync.ts) is the single source of truth for theme application:
 
-## Build Notes
+- Toggles `.dark` on the host document
+- Optionally injects lightweight canvas CSS into the iframe document
+- Is called from both the shell header and the iframe override
+
+If you change theme behavior, verify both the host UI and the canvas iframe.
+
+## Base UI Rules
+
+This repo uses `@base-ui/react`, not Radix UI.
+
+Key differences to remember:
+
+- Prefer Base UI's `render` prop when composing triggers and buttons
+- `nativeButton={false}` is required when the rendered trigger is not a native `button`
+- `Select.onValueChange` receives `string | null`
+- `CommandInput` uses `onValueChange`, not `onChange`
+- `CommandItem` uses `onSelect`, not `onClick`
+
+Tooltip special case:
+
+- [`src/components/ui/tooltip.tsx`](./src/components/ui/tooltip.tsx) includes a compatibility wrapper that accepts `asChild`
+- Internally it rewrites `asChild` to Base UI `render` so existing call sites do not create nested `button` elements
+- If you touch tooltip composition, guard against `button > button` hydration errors
+
+## Shell and Override Gotchas
+
+- [`src/core/studio/layout/Layout.tsx`](./src/core/studio/layout/Layout.tsx) is desktop-first and hidden on very small screens via `max-sm:hidden`
+- [`src/core/overrides/layout/EditorDrawer.tsx`](./src/core/overrides/layout/EditorDrawer.tsx) flattens Puck's drawer markup with `display: contents`; seemingly harmless wrapper changes can break the grid
+- [`src/core/overrides/canvas/ComponentOverlay.tsx`](./src/core/overrides/canvas/ComponentOverlay.tsx) must remain `pointer-events-none`
+- [`src/core/overrides/canvas/CanvasPreview.tsx`](./src/core/overrides/canvas/CanvasPreview.tsx) is intentionally lightweight
+- [`src/core/studio/layout/sidebar/library/ImageLibrary.tsx`](./src/core/studio/layout/sidebar/library/ImageLibrary.tsx) and [`src/core/studio/layout/sidebar/library/CopyLibrary.tsx`](./src/core/studio/layout/sidebar/library/CopyLibrary.tsx) are local tooling, not external data integrations
+
+## Known Gaps In The Current Implementation
+
+Be careful not to document or rely on these as finished features:
+
+- `StudioProps.ui`, `StudioProps.onAction`, `StudioProps.headerSlot`, and `StudioProps.drawerHeaderSlot` are declared in [`src/core/studio/Studio.tsx`](./src/core/studio/Studio.tsx) but are not currently used
+- The visible header publish button in [`src/core/studio/layout/header/Header.tsx`](./src/core/studio/layout/header/Header.tsx) is shell UI only; it does not directly invoke `onPublish`
+- Share and collaborator controls are presentational UI backed by local component state and static data
+- `defaultMessages` exports only the Chinese catalog even though an English catalog exists internally
+
+If you change any of the above, update both docs and type tests.
+
+## Build, Test, and Lint
 
 ```bash
-pnpm build   # runs tsup → dist/index.js, dist/index.mjs, dist/index.d.ts
+pnpm dev
+pnpm lint
+pnpm test
+pnpm test:types
+pnpm build
 ```
 
-- **External** (peer deps, not bundled): `react`, `react-dom`, `@puckeditor/core`, `@base-ui/react`
-- **Bundled**: `zustand`, `@dnd-kit/*`, `motion`, `lucide-react`, `@floating-ui/react`, `cmdk`
-- No `.tsx` extensions in import paths — tsup does not support `allowImportingTsExtensions`
-- `src/components/overrides/index.tsx` must stay `.tsx` (contains JSX)
-- `tsconfig.json` must **NOT** have `"incremental": true` — tsup DTS build fails with it
+Command meanings:
+
+- `pnpm dev`: runs the Next.js demo app
+- `pnpm lint`: `tsc --noEmit && eslint src`
+- `pnpm test`: Vitest runtime tests
+- `pnpm test:types`: `tsd` checks for the public API
+- `pnpm build`: `tsup` build for root, legacy, overrides, and CSS entries
+
+Build notes:
+
+- `src/` is what matters for the published package
+- `app/` is excluded from the library TypeScript build
+- `tsup` currently emits ESM `.js`, CJS `.cjs`, CSS, and `.d.ts` files into `dist/`
+- Keep `package.json` export paths aligned with the actual `dist/` filenames
+
+## Contributor Conventions
+
+- Import shared consumer-facing types through [`src/types/public.ts`](./src/types/public.ts)
+- Respect the ESLint guardrails in [`eslint.config.mjs`](./eslint.config.mjs)
+- Use the `@/` alias inside `src/`
+- Keep `src/index.ts` as the canonical public surface
+- When changing i18n or persistence behavior, think about migration and backwards compatibility
