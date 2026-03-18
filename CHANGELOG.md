@@ -1,3 +1,30 @@
+## [0.1.0](https://github.com/ancyloce/anvilkit-studio/compare/v0.0.1...v0.1.0) (2026-03-18)
+
+### Features
+
+* Add ESLint configuration to enforce import restrictions on public types, preventing deep-path imports from component files and ensuring consistent type usage across the project. ([b6b10a7](https://github.com/ancyloce/anvilkit-studio/commit/b6b10a7b8699b0253871d914ae9e52f9dce2d677))
+* Add global font styling and integrate Inter font in layout for improved typography consistency across the application. ([2269080](https://github.com/ancyloce/anvilkit-studio/commit/226908077c1883af5c38e52eb1ed61648aadae1b))
+* Add useCanvasThemeSync and useLibraryDropBridge hooks for improved theme synchronization and drag-and-drop functionality in the canvas, along with unit tests for prop replacement utilities. ([02e8758](https://github.com/ancyloce/anvilkit-studio/commit/02e875877e1a7313c48dbf2e12557a078198e46c))
+* Add useThemeSync hook to synchronize theme state with document class, and update activeTab type to improve type safety in the UI store. ([fa281a7](https://github.com/ancyloce/anvilkit-studio/commit/fa281a7d52fc828d7972c6ff703edf33aed734ad))
+* Consolidate public types in src/types/public.ts for improved API clarity, and enhance index.ts with new exports for store context and providers. ([607297a](https://github.com/ancyloce/anvilkit-studio/commit/607297ada608b5828fe6d23af9f16cfb1498b83c))
+* Enhance CanvasIframe component with library drag-and-drop support, integrating typed event contracts and utility functions for image and text replacement, while improving iframe document styling and interaction handling. ([3cc2018](https://github.com/ancyloce/anvilkit-studio/commit/3cc20183dc50345c94e677ebb330638a5eb913fe))
+* Enhance TooltipTrigger component to support render prop and maintain asChild functionality for better flexibility in rendering child elements. ([2da2458](https://github.com/ancyloce/anvilkit-studio/commit/2da245899b12bf09377ed3c27c030d7050ab17bf))
+* Implement drag-and-drop functionality for library items with typed event contracts and prop-replacement utilities. Includes hooks for managing ghost elements during drag operations. ([16e7646](https://github.com/ancyloce/anvilkit-studio/commit/16e7646e748e1db3f19f909516b50adbf3d7fefa))
+* Introduce core overrides for Puck editor components, including new field types, layout enhancements, and drag-and-drop functionality for improved user experience and customization. ([d7fdc9b](https://github.com/ancyloce/anvilkit-studio/commit/d7fdc9b73c05b549bfc759f5bb1bd64849e6db09))
+* Introduce legacy compatibility re-exports in index.legacy.ts for deprecated APIs, and add type-level tests for public API surface in api.test-d.ts to ensure type safety and prevent accidental changes. ([1d5b395](https://github.com/ancyloce/anvilkit-studio/commit/1d5b39537c73f955942a4134eeb52314564c3c30))
+* Introduce stable public types for @anvilkit/puck-studio, re-exporting consumer-facing types for better API management and internal refactoring. ([de2cb02](https://github.com/ancyloce/anvilkit-studio/commit/de2cb02ad40bce6e4eaa2de509f0ec8077c335ed))
+* Refactor CanvasIframe component to utilize useCanvasThemeSync and useLibraryDropBridge hooks, removing legacy drag-and-drop logic and improving theme synchronization and styling management. ([2cf3c7a](https://github.com/ancyloce/anvilkit-studio/commit/2cf3c7a63bf1000dda603f5958a89175541ad19a))
+* Refactor sidebar components to utilize typed active tab management and streamline drag-and-drop functionality for library items, enhancing user experience and code maintainability. ([4238a93](https://github.com/ancyloce/anvilkit-studio/commit/4238a93ec27cb6a905391f0aaaae75fd2cc75707))
+
+### Refactors
+
+* Consolidate type imports in Layout component and remove unused EditorHeader and EditorHeaderActions components from overrides. ([624f95d](https://github.com/ancyloce/anvilkit-studio/commit/624f95d1fe5bd43f0ddf560413201e367eaae083))
+* Refactor Studio component to consolidate type imports from public types and add useEffect for synchronizing i18n store with locale and messages changes. ([3c0506d](https://github.com/ancyloce/anvilkit-studio/commit/3c0506df611996ed10cfd037e5dcb3f7ad355040))
+* Standardize component styling by updating class names and structure across various UI components for improved consistency and maintainability. ([7696ede](https://github.com/ancyloce/anvilkit-studio/commit/7696ede84444cfed15c5c2d9ccedd03c28b78cf6))
+* Update components.json to change style to 'base-vega', add RTL support, and define menu color and accent for improved UI customization. ([b13169b](https://github.com/ancyloce/anvilkit-studio/commit/b13169bf7780f368bf73d8ccc4f2af8949c0e56d))
+* Update import path for Studio component to streamline module resolution and improve code organization. ([f6f8d5b](https://github.com/ancyloce/anvilkit-studio/commit/f6f8d5b8fe28de8e6f4fdf049ab9f59f70396c3d))
+* Update Tailwind CSS import path in components.json to improve project structure and maintain consistency in styling. ([5b0d7aa](https://github.com/ancyloce/anvilkit-studio/commit/5b0d7aa248bf8664ac0dcfc8700720525fa4837b))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
