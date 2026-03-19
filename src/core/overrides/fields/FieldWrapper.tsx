@@ -70,7 +70,7 @@ export function FieldWrapper({
 
   return (
     <ScrollArea className="h-full">
-      <div className="flex flex-col gap-0">
+      <div className="flex flex-col gap-0 [&>[class*='PuckFields-field']+[class*='PuckFields-field']]:!mt-0 [&>[class*='PuckFields-field']+[class*='PuckFields-field']]:!border-t [&>[class*='PuckFields-field']+[class*='PuckFields-field']]:!border-neutral-200 dark:[&>[class*='PuckFields-field']+[class*='PuckFields-field']]:!border-neutral-800/80">
         <div className="px-3 py-2 border-b">
           <Breadcrumb>
             <BreadcrumbList>
