@@ -1,3 +1,9 @@
+## [0.3.0](https://github.com/ancyloce/anvilkit-studio/compare/v0.2.0...v0.3.0) (2026-03-19)
+
+### Features
+
+* Add @anvilkit/puck-studio dependency and configure path mappings in TypeScript for improved module resolution ([37e98fe](https://github.com/ancyloce/anvilkit-studio/commit/37e98fe00198c01e4cdaffb14d634fd68b451562))
+
 ## [0.2.0](https://github.com/ancyloce/anvilkit-studio/compare/v0.1.0...v0.2.0) (2026-03-19)
 
 ### Features
