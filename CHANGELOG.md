@@ -1,3 +1,9 @@
+## [0.3.2](https://github.com/ancyloce/anvilkit-studio/compare/v0.3.1...v0.3.2) (2026-03-19)
+
+### Refactors
+
+* Update build script to link compiled stylesheet to package entrypoints and adjust README for auto-loading styles ([757edd8](https://github.com/ancyloce/anvilkit-studio/commit/757edd81d7be53b95a127d4f7a6e9a9c0ae94a3b))
+
 ## [0.3.1](https://github.com/ancyloce/anvilkit-studio/compare/v0.3.0...v0.3.1) (2026-03-19)
 
 ### Refactors
