@@ -9,23 +9,23 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./legacy": {
       "types": "./dist/legacy.d.ts",
-      "import": "./dist/legacy.mjs",
-      "require": "./dist/legacy.js"
+      "import": "./dist/legacy.js",
+      "require": "./dist/legacy.cjs"
     },
     "./overrides": {
       "types": "./dist/overrides.d.ts",
-      "import": "./dist/overrides.mjs",
-      "require": "./dist/overrides.js"
+      "import": "./dist/overrides.js",
+      "require": "./dist/overrides.cjs"
     },
     "./styles.css": "./dist/styles.css"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
@@ -35,7 +35,7 @@
     "./dist/styles.css"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsup && node scripts/validate-package-exports.mjs",
     "dev": "next dev",
     "lint": "tsc --noEmit && eslint src",
     "lint:types": "tsc --noEmit",
@@ -52,7 +52,6 @@
     "tailwindcss": "^4.2.1"
   },
   "dependencies": {
-    "@anvilkit/puck-studio": "^0.2.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
