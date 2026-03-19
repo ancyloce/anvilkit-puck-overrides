@@ -1,3 +1,9 @@
+## [0.3.3](https://github.com/ancyloce/anvilkit-studio/compare/v0.3.2...v0.3.3) (2026-03-19)
+
+### Refactors
+
+* Remove unused primary color variables from styles.css to streamline CSS and improve maintainability ([432c81d](https://github.com/ancyloce/anvilkit-studio/commit/432c81d6cf66ee17f77ae3477286df1ebf7eab21))
+
 ## [0.3.2](https://github.com/ancyloce/anvilkit-studio/compare/v0.3.1...v0.3.2) (2026-03-19)
 
 ### Refactors
