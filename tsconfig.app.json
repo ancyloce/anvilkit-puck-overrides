@@ -12,6 +12,13 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
+    "paths": {
+      "@anvilkit/puck-studio": ["./src/index.ts"],
+      "@anvilkit/puck-studio/legacy": ["./src/index.legacy.ts"],
+      "@anvilkit/puck-studio/overrides": ["./src/core/overrides/index.tsx"],
+      "@anvilkit/puck-studio/styles.css": ["./src/styles.css"],
+      "@/*": ["./src/*"]
+    },
     "plugins": [{ "name": "next" }]
   },
   "include": ["app", "next-env.d.ts"],
