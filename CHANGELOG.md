@@ -1,3 +1,14 @@
+## [0.2.0](https://github.com/ancyloce/anvilkit-studio/compare/v0.1.0...v0.2.0) (2026-03-19)
+
+### Features
+
+* Add optional back-button handler to Editor and Header components, enhancing navigation functionality. Update documentation to reflect new prop. ([ed242c9](https://github.com/ancyloce/anvilkit-studio/commit/ed242c9f71a5120ee78c490186fed9ddf8490737))
+
+### Refactors
+
+* Enhance FieldWrapper component styling by updating class names for improved layout consistency and maintainability. ([72a334f](https://github.com/ancyloce/anvilkit-studio/commit/72a334f1812c785a7964005fd4818f435ac6b172))
+* Update Separator component styling by adjusting class names for improved consistency and maintainability. ([9a5ec33](https://github.com/ancyloce/anvilkit-studio/commit/9a5ec33c38c320163ef7f0c9223680a12cb24757))
+
 ## [0.1.0](https://github.com/ancyloce/anvilkit-studio/compare/v0.0.1...v0.1.0) (2026-03-18)
 
 ### Features
