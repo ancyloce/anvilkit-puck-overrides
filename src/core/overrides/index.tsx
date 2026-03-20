@@ -18,7 +18,6 @@ export const puckOverrides: Partial<Overrides> = {
   drawer: EditorDrawer,
   components: EditorComponents,
   drawerItem: DrawerItem,
-  componentItem: DrawerItem,
   outline: EditorOutline,
   iframe: CanvasIframe,
   preview: CanvasPreview,

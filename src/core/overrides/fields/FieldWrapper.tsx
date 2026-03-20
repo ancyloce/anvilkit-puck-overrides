@@ -1,10 +1,10 @@
 "use client";
 import * as React from "react";
-import { usePuck } from "@puckeditor/core";
 import type { ComponentData, Overrides } from "@puckeditor/core";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { usePuckSelector } from "@/lib/use-puck-selector";
 import { Info } from "lucide-react";
 import {
   Breadcrumb,
@@ -34,8 +34,10 @@ function getComponentId(item: ComponentData | null | undefined): string | null {
 }
 
 function useBreadcrumbs(): BreadcrumbSegment[] {
-  const { appState, dispatch, selectedItem, getParentById } = usePuck();
-  const { itemSelector } = appState.ui;
+  const dispatch = usePuckSelector((state) => state.dispatch);
+  const getParentById = usePuckSelector((state) => state.getParentById);
+  const itemSelector = usePuckSelector((state) => state.appState.ui.itemSelector);
+  const selectedItem = usePuckSelector((state) => state.selectedItem);
 
   const selectRoot = () =>
     dispatch({ type: "setUi", ui: { itemSelector: null } });

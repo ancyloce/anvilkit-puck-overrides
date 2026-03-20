@@ -1,8 +1,8 @@
 "use client";
 import * as React from "react";
-import { usePuck } from "@puckeditor/core";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { usePuckSelector } from "@/lib/use-puck-selector";
 
 // outline override — Puck signature: { children: ReactNode }
 export function EditorOutline({
@@ -10,7 +10,7 @@ export function EditorOutline({
 }: {
   children: React.ReactNode;
 }): React.ReactElement {
-  const { selectedItem } = usePuck();
+  const selectedItem = usePuckSelector((state) => state.selectedItem);
 
   return (
     <div className="flex h-full flex-col">

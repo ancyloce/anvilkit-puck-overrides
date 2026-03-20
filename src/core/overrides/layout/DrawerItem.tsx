@@ -1,12 +1,12 @@
 "use client";
 import * as React from "react";
-import { usePuck } from "@puckeditor/core";
+import { usePuckSelector } from "@/lib/use-puck-selector";
 
 function getPlaceholderUrl(name: string): string {
   return `https://picsum.photos/seed/${encodeURIComponent(name)}/120/80`;
 }
 
-// drawerItem + componentItem override
+// drawerItem override
 // Puck signature: { children: ReactNode; name: string }
 export function DrawerItem({
   children,
@@ -15,8 +15,9 @@ export function DrawerItem({
   children: React.ReactNode;
   name: string;
 }): React.ReactElement {
-  const { config } = usePuck();
-  const componentConfig = config.components?.[name];
+  const componentConfig = usePuckSelector(
+    (state) => state.config.components?.[name],
+  );
   const thumbnail =
     typeof componentConfig?.metadata?.thumbnail === "string"
       ? componentConfig.metadata.thumbnail

@@ -11,13 +11,13 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
-import { usePuck } from "@puckeditor/core";
 import { Separator } from "@/components/ui/separator";
 import { Share } from "./Share";
 import { CollaboratorsPopover } from "./CollaboratorsPopover";
 import { useMsg, useTheme, useToggleTheme } from "@/store/hooks";
 import { useThemeSync } from "@/features/theme/useThemeSync";
 import { exportDataAsJson } from "@/features/export/export-json";
+import { usePuckSelector } from "@/lib/use-puck-selector";
 import {
   Tooltip,
   TooltipContent,
@@ -36,7 +36,9 @@ interface HeaderProps {
 }
 
 export const Header = ({ onBack }: HeaderProps) => {
-  const { history, appState } = usePuck();
+  const history = usePuckSelector((state) => state.history);
+  const pageTitle = usePuckSelector((state) => state.appState?.data?.root?.props?.title);
+  const puckData = usePuckSelector((state) => state.appState.data);
   const back = useMsg("header.back");
   const publish = useMsg("header.publish");
   const undo = useMsg("header.undo");
@@ -80,7 +82,7 @@ export const Header = ({ onBack }: HeaderProps) => {
             </Tooltip>
           ) : null}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-sm font-medium">
-            {appState?.data?.root?.props?.title || ""}
+            {pageTitle || ""}
           </div>
           <div className="flex items-center justify-center gap-2 h-full ml-auto">
             <Tooltip>
@@ -149,8 +151,8 @@ export const Header = ({ onBack }: HeaderProps) => {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() => {
-                    exportDataAsJson(appState.data, {
-                      filenameBase: appState.data.root?.props?.title,
+                    exportDataAsJson(puckData, {
+                      filenameBase: puckData.root?.props?.title,
                     });
                   }}
                 >
