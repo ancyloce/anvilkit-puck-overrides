@@ -10,11 +10,19 @@ export const ACTIVE_TABS = [
 ] as const;
 
 export type ActiveTab = (typeof ACTIVE_TABS)[number];
+export const CANVAS_VIEWPORTS = ["mobile", "tablet", "desktop"] as const;
+
+export type CanvasViewport = (typeof CANVAS_VIEWPORTS)[number];
 
 const activeTabSet = new Set<string>(ACTIVE_TABS);
+const canvasViewportSet = new Set<string>(CANVAS_VIEWPORTS);
 
 export function isActiveTab(value: string): value is ActiveTab {
   return activeTabSet.has(value);
+}
+
+export function isCanvasViewport(value: string): value is CanvasViewport {
+  return canvasViewportSet.has(value);
 }
 
 interface DrawerSlice {
@@ -39,7 +47,16 @@ interface ThemeSlice {
   toggleTheme: () => void;
 }
 
-export type EditorUiStore = DrawerSlice & AsideSlice & OutlineSlice & ThemeSlice;
+interface CanvasSlice {
+  canvasViewport: CanvasViewport;
+  setCanvasViewport: (viewport: CanvasViewport) => void;
+}
+
+export type EditorUiStore = DrawerSlice &
+  AsideSlice &
+  OutlineSlice &
+  ThemeSlice &
+  CanvasSlice;
 
 export type EditorUiStoreApi = ReturnType<typeof createEditorUiStore>;
 
@@ -61,6 +78,8 @@ export function createEditorUiStore(storeId: string) {
           set((s) => ({
             outlineExpanded: { ...s.outlineExpanded, [id]: !s.outlineExpanded[id] },
           })),
+        canvasViewport: "desktop",
+        setCanvasViewport: (canvasViewport) => set({ canvasViewport }),
         theme: "light",
         toggleTheme: () =>
           set((s) => {
@@ -74,6 +93,7 @@ export function createEditorUiStore(storeId: string) {
           activeTab: s.activeTab,
           drawerCollapsed: s.drawerCollapsed,
           outlineExpanded: s.outlineExpanded,
+          canvasViewport: s.canvasViewport,
           theme: s.theme,
           // drawerSearch intentionally excluded — transient input
         }),

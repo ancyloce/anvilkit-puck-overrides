@@ -27,6 +27,12 @@ export function useOutlineExpanded(id: string) {
 export function useToggleOutlineItem() {
   return useStore(useEditorUiStoreApi(), (s) => s.toggleOutlineItem);
 }
+export function useCanvasViewport() {
+  return useStore(useEditorUiStoreApi(), (s) => s.canvasViewport);
+}
+export function useSetCanvasViewport() {
+  return useStore(useEditorUiStoreApi(), (s) => s.setCanvasViewport);
+}
 export function useTheme() {
   return useStore(useEditorUiStoreApi(), (s) => s.theme);
 }
