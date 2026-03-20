@@ -16,7 +16,6 @@ function PuckRoot({ children }: { children?: React.ReactNode }): React.ReactElem
 
 export const puckOverrides: Partial<Overrides> = {
   drawer: EditorDrawer,
-  components: EditorComponents,
   drawerItem: DrawerItem,
   outline: EditorOutline,
   iframe: CanvasIframe,
