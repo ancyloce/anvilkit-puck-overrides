@@ -8,9 +8,5 @@ export function CanvasPreview({
 }: {
   children: React.ReactNode;
 }): React.ReactElement {
-  return (
-    <div className="w-full h-full px-3 py-2 text-sm font-medium text-foreground">
-      {children}
-    </div>
-  );
+  return <div className="h-full w-full px-3 py-2">{children}</div>;
 }
