@@ -1,3 +1,9 @@
+## [0.4.4](https://github.com/ancyloce/anvilkit-studio/compare/v0.4.3...v0.4.4) (2026-03-20)
+
+### Refactors
+
+* Simplify tsup configuration by unifying build settings and enhancing obfuscation plugin logic for improved code clarity and performance. ([e9f151d](https://github.com/ancyloce/anvilkit-studio/commit/e9f151da61d396e383f1c087d4ca4a5375245a8e))
+
 ## [0.4.3](https://github.com/ancyloce/anvilkit-studio/compare/v0.4.2...v0.4.3) (2026-03-20)
 
 ### Refactors
