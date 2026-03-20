@@ -5,6 +5,8 @@ export { Studio } from "./core/studio/Studio";
 // Public types — all consumer-facing types live in src/types/public.ts
 export type {
   StudioProps,
+  StudioActionHandler,
+  StudioHeaderAction,
   ImagesProps,
   ImageItem,
   CopywritingProps,

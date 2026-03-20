@@ -16,12 +16,13 @@ import { EditorUiStoreProvider } from "@/store/ui-context";
 import { EditorI18nStoreProvider } from "@/store/i18n-context";
 import { defaultMessages } from "@/store/i18n-defaults";
 import type { Locale, Messages } from "@/store/i18n";
+import type { StudioActionHandler, StudioHeaderAction } from "./types";
 
 export interface StudioProps {
   // Required Puck props
   config: Config;
   data: Data;
-  onPublish: (data: Data) => void;
+  onPublish: StudioActionHandler;
 
   // Optional Puck pass-through props
   onChange?: (data: Data) => void;
@@ -36,6 +37,14 @@ export interface StudioProps {
 
   // Studio shell customization
   onBack?: React.MouseEventHandler<HTMLButtonElement>;
+  onSaveDraft?: StudioActionHandler;
+  isSavingDraft?: boolean;
+  lastSavedAt?: string | Date | number;
+  isPublishing?: boolean;
+  onOpenShare?: StudioActionHandler;
+  onOpenCollaborators?: StudioActionHandler;
+  onExportJson?: StudioActionHandler;
+  onHeaderAction?: (action: StudioHeaderAction) => void;
   headerSlot?: React.ReactNode;
   drawerHeaderSlot?: React.ReactNode;
   className?: string;
@@ -57,10 +66,19 @@ export function Studio({
   data,
   onPublish,
   onChange,
+  onAction,
   overrideExtensions,
   aiHost,
   className,
   onBack,
+  onSaveDraft,
+  isSavingDraft,
+  lastSavedAt,
+  isPublishing,
+  onOpenShare,
+  onOpenCollaborators,
+  onExportJson,
+  onHeaderAction,
   images,
   copywritings,
   storeId,
@@ -109,12 +127,22 @@ export function Studio({
             data={data}
             onPublish={onPublish}
             onChange={onChange}
+            onAction={onAction}
             overrides={mergedOverrides}
             plugins={aiPlugin ? [aiPlugin] : []}
           >
             <EditorLayout
               aiPanel={aiPlugin?.render()}
               onBack={onBack}
+              onSaveDraft={onSaveDraft}
+              isSavingDraft={isSavingDraft}
+              lastSavedAt={lastSavedAt}
+              onPublish={onPublish}
+              isPublishing={isPublishing}
+              onOpenShare={onOpenShare}
+              onOpenCollaborators={onOpenCollaborators}
+              onExportJson={onExportJson}
+              onHeaderAction={onHeaderAction}
               images={images}
               copywritings={copywritings}
             />

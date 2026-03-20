@@ -6,7 +6,6 @@ import {
   Popover,
   PopoverPanel,
   PopoverTrigger,
-  PopoverTitle,
 } from '@/components/animate-ui/components/base/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,12 +15,11 @@ import { useMsg } from '@/store/hooks';
 
 type Access = 'private' | 'anyone-view' | 'anyone-edit';
 
-export const Share = () => {
+export const SharePanel = () => {
   const [access, setAccess] = React.useState<Access>('private');
   const [copied, setCopied] = React.useState(false);
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
-  const shareButton = useMsg('share.button');
   const shareTitle = useMsg('share.title');
   const peopleWithAccess = useMsg('share.people-with-access');
   const generalAccess = useMsg('share.general-access');
@@ -57,55 +55,63 @@ export const Share = () => {
   };
 
   return (
+    <div className="flex flex-col gap-3">
+      <div className="text-base font-medium">{shareTitle}</div>
+
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">{peopleWithAccess}</span>
+        <Collaborators />
+      </div>
+
+      <Separator />
+
+      <div className="flex flex-col gap-1">
+        <span className="text-sm font-medium">{generalAccess}</span>
+        {ACCESS_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => setAccess(opt.value)}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted"
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              {opt.icon}
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium leading-none">{opt.label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>
+            </div>
+            {access === opt.value && (
+              <Check className="w-4 h-4 text-primary shrink-0" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      <Separator />
+
+      <div className="flex gap-2">
+        <Input readOnly value={shareUrl} className="flex-1 text-xs" />
+        <Button size="sm" variant="outline" onClick={handleCopy} className="shrink-0">
+          {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+          {copied ? copiedLabel : copyLabel}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export const Share = () => {
+  const shareButton = useMsg('share.button');
+
+  return (
     <Popover>
       <PopoverTrigger render={<Button size="sm" variant="outline" />}>
         <Link2 className="h-4 w-4" />
         {shareButton}
       </PopoverTrigger>
-      <PopoverPanel side="bottom" align="end" className="w-80 flex flex-col gap-3">
-        <PopoverTitle className="text-base font-medium">{shareTitle}</PopoverTitle>
-
-        {/* Collaborators */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">{peopleWithAccess}</span>
-          <Collaborators />
-        </div>
-
-        <Separator />
-
-        {/* Access level */}
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium">{generalAccess}</span>
-          {ACCESS_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setAccess(opt.value)}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted"
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                {opt.icon}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium leading-none">{opt.label}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>
-              </div>
-              {access === opt.value && (
-                <Check className="w-4 h-4 text-primary shrink-0" />
-              )}
-            </button>
-          ))}
-        </div>
-
-        <Separator />
-
-        {/* Copy link */}
-        <div className="flex gap-2">
-          <Input readOnly value={shareUrl} className="flex-1 text-xs" />
-          <Button size="sm" variant="outline" onClick={handleCopy} className="shrink-0">
-            {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
-            {copied ? copiedLabel : copyLabel}
-          </Button>
-        </div>
+      <PopoverPanel side="bottom" align="end" className="w-80">
+        <SharePanel />
       </PopoverPanel>
     </Popover>
   );

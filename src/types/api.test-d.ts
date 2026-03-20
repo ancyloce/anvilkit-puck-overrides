@@ -11,9 +11,12 @@ import {
   expectNotAssignable,
 } from "tsd";
 import type { MouseEventHandler } from "react";
+import type { Data } from "@puckeditor/core";
 
 import type {
   StudioProps,
+  StudioActionHandler,
+  StudioHeaderAction,
   ImagesProps,
   ImageItem,
   CopywritingProps,
@@ -35,6 +38,27 @@ expectType<CopywritingProps | undefined>(studioProps.copywritings);
 expectType<Locale | undefined>(studioProps.locale);
 expectType<Messages | undefined>(studioProps.messages);
 expectType<MouseEventHandler<HTMLButtonElement> | undefined>(studioProps.onBack);
+expectType<StudioActionHandler | undefined>(studioProps.onSaveDraft);
+expectType<StudioActionHandler>(studioProps.onPublish);
+expectType<StudioActionHandler | undefined>(studioProps.onOpenShare);
+expectType<StudioActionHandler | undefined>(studioProps.onOpenCollaborators);
+expectType<StudioActionHandler | undefined>(studioProps.onExportJson);
+expectType<((action: StudioHeaderAction) => void) | undefined>(studioProps.onHeaderAction);
+expectType<boolean | undefined>(studioProps.isSavingDraft);
+expectType<string | Date | number | undefined>(studioProps.lastSavedAt);
+expectType<boolean | undefined>(studioProps.isPublishing);
+
+declare const headerAction: StudioHeaderAction;
+expectType<Data>(headerAction.data);
+expectAssignable<StudioHeaderAction["type"]>("undo");
+expectAssignable<StudioHeaderAction["type"]>("redo");
+expectAssignable<StudioHeaderAction["type"]>("save-draft");
+expectAssignable<StudioHeaderAction["type"]>("publish");
+expectAssignable<StudioHeaderAction["type"]>("open-share");
+expectAssignable<StudioHeaderAction["type"]>("open-collaborators");
+expectAssignable<StudioHeaderAction["type"]>("export-json");
+expectAssignable<StudioHeaderAction["type"]>("toggle-theme");
+expectNotAssignable<StudioHeaderAction["type"]>("archive");
 
 // ─── ImageItem ───────────────────────────────────────────────────────────────
 declare const imageItem: ImageItem;

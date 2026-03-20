@@ -7,6 +7,10 @@
 // Component prop types
 export type { StudioProps } from "@/core/studio/Studio";
 export type {
+  StudioActionHandler,
+  StudioHeaderAction,
+} from "@/core/studio/types";
+export type {
   ImagesProps,
   ImageItem,
 } from "@/core/studio/layout/sidebar/library/ImageLibrary";

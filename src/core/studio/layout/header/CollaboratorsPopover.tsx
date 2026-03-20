@@ -27,17 +27,44 @@ const AVATARS = [
 
 const [currentUser, ...others] = AVATARS;
 
-export const CollaboratorsPopover = () => {
+interface CollaboratorsPopoverProps {
+  onClick?: () => void | Promise<void>;
+  ariaLabel?: string;
+}
+
+export const CollaboratorsPopover = ({
+  onClick,
+  ariaLabel,
+}: CollaboratorsPopoverProps) => {
   const collaboratorsTitle = useMsg("collaborators.title");
+  const trigger = (
+    <button
+      type="button"
+      className="inline-flex size-8 items-center justify-center rounded-full ring-2 ring-background align-middle focus:outline-none focus-visible:ring-primary"
+      onClick={
+        onClick
+          ? () => {
+              void onClick();
+            }
+          : undefined
+      }
+      aria-label={ariaLabel ?? collaboratorsTitle}
+    >
+      <Avatar className="size-6">
+        <AvatarImage src={currentUser.src} />
+        <AvatarFallback>{currentUser.fallback}</AvatarFallback>
+      </Avatar>
+    </button>
+  );
+
+  if (onClick) {
+    return trigger;
+  }
+
   return (
     <Popover>
       <PopoverTrigger render={<div />} nativeButton={false}>
-        <button className="rounded-full ring-2 ring-background focus:outline-none focus-visible:ring-primary">
-          <Avatar className="size-6">
-            <AvatarImage src={currentUser.src} />
-            <AvatarFallback>{currentUser.fallback}</AvatarFallback>
-          </Avatar>
-        </button>
+        {trigger}
       </PopoverTrigger>
       <PopoverPanel side="bottom" align="end" className="w-64 flex flex-col gap-3">
         <PopoverTitle className="text-sm font-medium">{collaboratorsTitle}</PopoverTitle>
