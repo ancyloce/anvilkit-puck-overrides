@@ -54,13 +54,26 @@ pnpm add @anvilkit/puck-studio
 ```tsx
 import { Studio } from "@anvilkit/puck-studio";
 
-export function Editor({ config, data, setData, save }) {
+export function Editor({
+  config,
+  data,
+  setData,
+  publishPage,
+  saveDraft,
+  savingDraft,
+  lastSavedAt,
+  openShare,
+}) {
   return (
     <Studio
       config={config}
       data={data}
       onChange={setData}
-      onPublish={save}
+      onSaveDraft={saveDraft}
+      isSavingDraft={savingDraft}
+      lastSavedAt={lastSavedAt}
+      onPublish={publishPage}
+      onOpenShare={openShare}
       className="h-screen"
       storeId="marketing-home"
     />
@@ -75,6 +88,10 @@ export function Editor({ config, data, setData, save }) {
 | `config`, `data`, `onPublish` | 标准 Puck 输入 |
 | `onChange` | 可选的 Puck `onChange` 透传 |
 | `onBack` | 可选的 header 返回按钮点击回调；提供后才会渲染返回按钮 |
+| `onSaveDraft`, `isSavingDraft`, `lastSavedAt` | 把 header 中的草稿保存动作接入你的持久化流程，并允许 host 控制轻量保存状态 |
+| `onOpenShare`, `onOpenCollaborators`, `onExportJson` | 允许 host 用真实的分享、协作者和导出流程替换内置次级动作 |
+| `onHeaderAction` | 可选的统一 header 动作上报（`undo`、`redo`、`save-draft`、`publish`、`open-share`、`open-collaborators`、`export-json`、`toggle-theme`） |
+| `isPublishing` | 发布按钮的可选加载状态 |
 | `overrideExtensions` | 最后参与合并，因此你的 overrides 优先级高于包内默认值 |
 | `images` | 为图片库配置 `items`、`seeds` 或分页加载 |
 | `copywritings` | 为文案库配置 `items` 或分页加载 |
@@ -92,17 +109,48 @@ overrides 的合并顺序是：
 
 这意味着 consumer 传入的 overrides 拥有最高优先级。
 
+### Header 动作
+
+当前 header 会直接保留 undo/redo、主题切换和协作者入口。保存与发布合并为一个 `保存 / 发布` 触发器，点击后会弹出菜单供用户选择 `保存草稿` 或 `发布`；其余次级动作继续放在 `More` 菜单里。所有动作都会使用当前编辑器中的 Puck data。
+
+```tsx
+<Studio
+  config={config}
+  data={data}
+  onPublish={publishPage}
+  onSaveDraft={saveDraft}
+  isSavingDraft={savingDraft}
+  lastSavedAt={draftSavedAt}
+  onOpenShare={(currentData) => openShareModal(currentData)}
+  onOpenCollaborators={(currentData) => openCollaboratorsPanel(currentData)}
+  onExportJson={(currentData) => exportDocument(currentData)}
+  onHeaderAction={(action) => {
+    console.log(action.type, action.data);
+  }}
+/>
+```
+
+默认行为如下：
+
+- `保存草稿`：如果提供了 `onSaveDraft`，则调用该回调
+- `发布`：调用 `onPublish`
+- `分享`：如果没有提供 `onOpenShare`，则打开内置分享弹窗
+- `协作者`：如果没有提供 `onOpenCollaborators`，则打开内置协作者 popover
+- `导出 JSON`：如果没有提供 `onExportJson`，则使用内置 JSON 导出逻辑
+
 ### Demo 页面覆盖范围
 
-[`../app/page.tsx`](../app/page.tsx) 现在会把展示用的 `demoImages` 和 `demoCopywritings` 传给 `Studio`，因此本地 demo 页面会在 `ImageLibrary` 和 `CopyLibrary` 两个 tab 中直接显示可操作内容。
+[`../app/page.tsx`](../app/page.tsx) 是当前 `Studio` 集成方式的实时演示页。它现在会把 `seededImageDemo`、`pagedImageDemo` 和 `pagedCopyDemo` 传给 `Studio`，同时还接入了示例 `onSaveDraft` 与 `onPublish`，因此本地页面会同时覆盖侧边栏库能力与 header 动作。
 
 运行 `pnpm dev` 后，可以通过侧边栏验证：
 
+- 在 seeded image 模式和 paged image 模式之间切换
 - 两个库里的搜索行为
 - 从 `ImageLibrary` 拖拽图片 ghost
 - 从 `CopyLibrary` 拖拽文本 ghost
 - `CopyLibrary` 的分类分组展示
 - 在 `Studio` 中传入 `images` 与 `copywritings` 的推荐集成方式
+- header 中草稿保存和发布的接线方式
 
 ## 库能力定制
 
@@ -146,15 +194,42 @@ const images: ImagesProps = { items: brandImages };
 />
 ```
 
-对于分页加载，建议让 loader 只负责返回当前搜索词下的一页图片：
+对于分页加载，建议让 loader 只负责返回当前搜索词下的一页图片。在生产环境里，通常还应该顺手做响应归一化，并在请求失败时直接抛错，这样组件可以自然显示内联错误状态：
 
 ```tsx
+type ImageApiResponse = {
+  items: Array<{
+    id: string;
+    src: string;
+    alt?: string;
+  }>;
+  nextPage?: number | null;
+};
+
 const remoteImages: ImagesProps = {
   pageSize: 24,
   loadPage: async (query, page, pageSize) => {
-    const res = await fetch(`/api/images?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`);
-    const json = await res.json();
-    return { items: json.items, hasMore: json.hasMore };
+    const params = new URLSearchParams({
+      q: query,
+      page: String(page),
+      pageSize: String(pageSize),
+    });
+    const res = await fetch(`/api/images?${params.toString()}`);
+
+    if (!res.ok) {
+      throw new Error(`Image request failed: ${res.status}`);
+    }
+
+    const json = (await res.json()) as ImageApiResponse;
+
+    return {
+      items: json.items.map((item) => ({
+        id: item.id,
+        src: item.src,
+        alt: item.alt ?? "Image",
+      })),
+      hasMore: json.nextPage !== null && json.nextPage !== undefined,
+    };
   },
 };
 ```
@@ -192,12 +267,40 @@ const copywritings: CopywritingProps = { items: snippets };
 如果你省略 `copywritings`，则会使用内置文案片段库。
 
 ```tsx
+type CopyApiResponse = {
+  items: Array<{
+    category: string;
+    label: string;
+    text: string;
+  }>;
+  total?: number;
+};
+
 const remoteCopy: CopywritingProps = {
   pageSize: 24,
   loadPage: async (query, page, pageSize) => {
-    const res = await fetch(`/api/copy?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`);
-    const json = await res.json();
-    return { items: json.items, hasMore: json.hasMore };
+    const params = new URLSearchParams({
+      q: query,
+      page: String(page),
+      pageSize: String(pageSize),
+    });
+    const res = await fetch(`/api/copy?${params.toString()}`);
+
+    if (!res.ok) {
+      throw new Error(`Copy request failed: ${res.status}`);
+    }
+
+    const json = (await res.json()) as CopyApiResponse;
+    const consumed = (page + 1) * pageSize;
+
+    return {
+      items: json.items.map((item) => ({
+        category: item.category,
+        label: item.label,
+        text: item.text,
+      })),
+      hasMore: json.total !== undefined ? consumed < json.total : json.items.length >= pageSize,
+    };
   },
 };
 ```
@@ -206,7 +309,7 @@ const remoteCopy: CopywritingProps = {
 
 ### 共享滚动基础设施
 
-[`../src/components/ui/scroll-area.tsx`](../src/components/ui/scroll-area.tsx) 现在暴露 `viewportRef`，这样虚拟列表可以绑定到真实的滚动容器，而不是外层包裹元素。这是两个侧边栏库实现虚拟化的共同基础。
+[`../src/components/ui/scroll-area.tsx`](../src/components/ui/scroll-area.tsx) 现在暴露 `viewportRef`，这样虚拟列表可以绑定到真实的滚动容器，而不是外层包裹元素。这个 viewport ref 是两个侧边栏库实现虚拟化所必需的共享基础，因为它们的测量、overscan 和 load-more 判断都依赖真实的滚动容器。
 
 ## 本地化
 
@@ -303,6 +406,8 @@ Studio
 ### 公共类型
 
 - `StudioProps`
+- `StudioActionHandler`
+- `StudioHeaderAction`
 - `ImagesProps`
 - `ImageItem`
 - `CopywritingProps`
@@ -322,7 +427,7 @@ Studio
 
 - `Studio` 目前是桌面优先；在很小的屏幕上，[`EditorLayout`](../src/core/studio/layout/Layout.tsx) 会被隐藏
 - 图片库和文案库是本地编辑器工具，不是资产管理后端
-- header 中的 share 和 collaborators popover 只是展示型壳层 UI，不是实时协作功能
+- 内置 share dialog 和 collaborators popover 属于壳层级便捷功能；它们可以被 host callback 替换，但并不是实时协作能力
 - 如果你需要完全自定义的 publish、share 或壳层级工作流，请直接基于 `puckOverrides` 构建，或者 fork `Studio`
 
 ## 开发

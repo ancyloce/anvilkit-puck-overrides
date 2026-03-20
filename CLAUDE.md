@@ -54,6 +54,8 @@ Root exports from [`src/index.ts`](./src/index.ts):
 Public types re-exported from [`src/types/public.ts`](./src/types/public.ts):
 
 - `StudioProps`
+- `StudioActionHandler`
+- `StudioHeaderAction`
 - `ImagesProps`
 - `ImageItem`
 - `CopywritingProps`
@@ -74,6 +76,7 @@ If you add or remove anything from the public API, update [`src/types/api.test-d
 
 Current public library prop surfaces to keep in sync:
 
+- `StudioProps`: `onSaveDraft`, `isSavingDraft`, `lastSavedAt`, `isPublishing`, `onOpenShare`, `onOpenCollaborators`, `onExportJson`, `onHeaderAction`
 - `ImagesProps`: `items`, `seeds`, `loadPage`, `pageSize`
 - `CopywritingProps`: `items`, `loadPage`, `pageSize`
 
@@ -177,11 +180,11 @@ Testing:
 
 The sidebar libraries are editor-local tooling that live inside a shared `ScrollArea`. The current implementation direction is intentional and should stay consistent unless there is a strong architectural reason to change it.
 
-- Use `@tanstack/react-virtual` for long sidebar lists so the shell keeps drag behavior and search UX while keeping DOM size small.
+- Use `@tanstack/react-virtual` for long sidebar lists. It fits the current sidebar architecture because the panels are fixed-width, editor-local surfaces that need predictable scroll ownership, drag behavior, and small DOM size at the same time.
 - `ImageLibrary` uses row-based virtualization for the two-column grid. Infinite loading should continue to flow through `loadPage(query, page, pageSize)`.
 - `CopyLibrary` uses single-column virtualization over one flattened render list. Search mode virtualizes filtered snippets directly; non-search mode flattens category headers and snippet items together so grouping is preserved.
 - Preserve backward compatibility when changing these panels: `ImageLibrary` still supports `items` and `seeds`, and `CopyLibrary` still supports `items`.
-- `src/components/ui/scroll-area.tsx` exposes `viewportRef`; virtualizers must bind to that viewport element, not the outer root wrapper, or measurements and load-more triggers will drift.
+- `src/components/ui/scroll-area.tsx` exposes `viewportRef`; virtualizers must bind to that viewport element, not the outer root wrapper. This is a required foundation for both libraries, or measurements and load-more triggers will drift.
 - Keep `useGhostDrag` and the existing drag/drop event contract intact when refactoring the libraries.
 - If you change `ImagesProps`, `CopywritingProps`, or public exports, update [`README.md`](./README.md), [`docs/README.zh.md`](./docs/README.zh.md), [`app/page.tsx`](./app/page.tsx), and [`src/types/api.test-d.ts`](./src/types/api.test-d.ts) in the same change.
 
@@ -219,7 +222,7 @@ Tooltip special case:
 - [`src/core/overrides/layout/EditorDrawer.tsx`](./src/core/overrides/layout/EditorDrawer.tsx) flattens Puck's drawer markup with `display: contents`; seemingly harmless wrapper changes can break the grid
 - [`src/core/overrides/canvas/ComponentOverlay.tsx`](./src/core/overrides/canvas/ComponentOverlay.tsx) must remain `pointer-events-none`
 - [`src/core/overrides/canvas/CanvasPreview.tsx`](./src/core/overrides/canvas/CanvasPreview.tsx) is intentionally lightweight
-- [`app/page.tsx`](./app/page.tsx) is the live showcase for passing `images` and `copywritings` into `Studio`; keep its demo data rich enough to exercise search, drag behavior, and copy grouping
+- [`app/page.tsx`](./app/page.tsx) is the live showcase for the recommended `Studio` integration path; keep its seeded/paged image modes, paged copy data, and draft/publish handlers rich enough to exercise search, drag behavior, copy grouping, and shell wiring
 - [`src/core/studio/layout/sidebar/library/ImageLibrary.tsx`](./src/core/studio/layout/sidebar/library/ImageLibrary.tsx) and [`src/core/studio/layout/sidebar/library/CopyLibrary.tsx`](./src/core/studio/layout/sidebar/library/CopyLibrary.tsx) are local tooling, not external data integrations
 
 ## Known Gaps In The Current Implementation
@@ -227,8 +230,7 @@ Tooltip special case:
 Be careful not to document or rely on these as finished features:
 
 - `StudioProps.ui`, `StudioProps.onAction`, `StudioProps.headerSlot`, and `StudioProps.drawerHeaderSlot` are declared in [`src/core/studio/Studio.tsx`](./src/core/studio/Studio.tsx) but are not currently used
-- The visible header publish button in [`src/core/studio/layout/header/Header.tsx`](./src/core/studio/layout/header/Header.tsx) is shell UI only; it does not directly invoke `onPublish`
-- Share and collaborator controls are presentational UI backed by local component state and static data
+- The built-in share dialog and collaborators popover are shell conveniences, not real-time collaboration or permission-management features
 - `defaultMessages` exports only the Chinese catalog even though an English catalog exists internally
 
 If you change any of the above, update both docs and type tests.

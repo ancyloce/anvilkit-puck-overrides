@@ -54,13 +54,26 @@ The package publishes:
 ```tsx
 import { Studio } from "@anvilkit/puck-studio";
 
-export function Editor({ config, data, setData, save }) {
+export function Editor({
+  config,
+  data,
+  setData,
+  publishPage,
+  saveDraft,
+  savingDraft,
+  lastSavedAt,
+  openShare,
+}) {
   return (
     <Studio
       config={config}
       data={data}
       onChange={setData}
-      onPublish={save}
+      onSaveDraft={saveDraft}
+      isSavingDraft={savingDraft}
+      lastSavedAt={lastSavedAt}
+      onPublish={publishPage}
+      onOpenShare={openShare}
       className="h-screen"
       storeId="marketing-home"
     />
@@ -75,6 +88,10 @@ export function Editor({ config, data, setData, save }) {
 | `config`, `data`, `onPublish` | Standard Puck inputs |
 | `onChange` | Optional Puck `onChange` passthrough |
 | `onBack` | Optional header back-button click handler; when provided, the back button is rendered |
+| `onSaveDraft`, `isSavingDraft`, `lastSavedAt` | Wires the header draft action to your persistence flow and lets the host control lightweight save status |
+| `onOpenShare`, `onOpenCollaborators`, `onExportJson` | Lets host apps replace secondary header actions with real share, collaborator, or export workflows |
+| `onHeaderAction` | Optional unified callback for header action reporting (`undo`, `redo`, `save-draft`, `publish`, `open-share`, `open-collaborators`, `export-json`, `toggle-theme`) |
+| `isPublishing` | Optional loading state for the publish button |
 | `overrideExtensions` | Merged last, so your overrides win over the packaged defaults |
 | `images` | Configures image library `items`, `seeds`, or paged loading |
 | `copywritings` | Configures copy library `items` or paged loading |
@@ -92,17 +109,48 @@ Merge order for overrides is:
 
 That means consumer overrides take precedence.
 
+### Header Actions
+
+The studio header keeps undo/redo, theme toggle, and collaborators visible. Save and publish are grouped behind a single `Save / Publish` trigger that opens a menu for `Save Draft` and `Publish`, while secondary actions stay in `More`. Every action uses the current Puck data from the editor state.
+
+```tsx
+<Studio
+  config={config}
+  data={data}
+  onPublish={publishPage}
+  onSaveDraft={saveDraft}
+  isSavingDraft={savingDraft}
+  lastSavedAt={draftSavedAt}
+  onOpenShare={(currentData) => openShareModal(currentData)}
+  onOpenCollaborators={(currentData) => openCollaboratorsPanel(currentData)}
+  onExportJson={(currentData) => exportDocument(currentData)}
+  onHeaderAction={(action) => {
+    console.log(action.type, action.data);
+  }}
+/>
+```
+
+By default:
+
+- `Save Draft` calls `onSaveDraft` when provided
+- `Publish` calls `onPublish`
+- `Share` opens the built-in share dialog unless `onOpenShare` is provided
+- `Collaborators` opens the built-in popover unless `onOpenCollaborators` is provided
+- `Export JSON` uses the built-in JSON export unless `onExportJson` is provided
+
 ### Demo App Coverage
 
-[`app/page.tsx`](./app/page.tsx) now passes showcase `demoImages` and `demoCopywritings` into `Studio`, so the local demo page has visible content in both `ImageLibrary` and `CopyLibrary`.
+[`app/page.tsx`](./app/page.tsx) is the live showcase for the current `Studio` integration. It now wires `seededImageDemo`, `pagedImageDemo`, and `pagedCopyDemo` into `Studio`, plus demo `onSaveDraft` and `onPublish` handlers, so the local page exercises both sidebar libraries and the shell actions together.
 
 Use `pnpm dev` and the sidebar tabs to verify:
 
+- switching between seeded and paged image modes
 - search behavior in both libraries
 - image ghost-drag from `ImageLibrary`
 - text ghost-drag from `CopyLibrary`
 - grouped category presentation in `CopyLibrary`
 - the recommended `images` and `copywritings` integration pattern inside `Studio`
+- draft save and publish wiring from the header shell
 
 ## Library Customization
 
@@ -146,15 +194,42 @@ If you only want placeholder images, provide `seeds` instead of `items`:
 />
 ```
 
-For paged loading, keep the loader focused on returning the next page of images for the current search query:
+For paged loading, keep the loader focused on returning the next page of images for the current search query. In production, it is usually worth normalizing the API response shape and throwing on non-OK responses so the library can surface its inline error state cleanly:
 
 ```tsx
+type ImageApiResponse = {
+  items: Array<{
+    id: string;
+    src: string;
+    alt?: string;
+  }>;
+  nextPage?: number | null;
+};
+
 const remoteImages: ImagesProps = {
   pageSize: 24,
   loadPage: async (query, page, pageSize) => {
-    const res = await fetch(`/api/images?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`);
-    const json = await res.json();
-    return { items: json.items, hasMore: json.hasMore };
+    const params = new URLSearchParams({
+      q: query,
+      page: String(page),
+      pageSize: String(pageSize),
+    });
+    const res = await fetch(`/api/images?${params.toString()}`);
+
+    if (!res.ok) {
+      throw new Error(`Image request failed: ${res.status}`);
+    }
+
+    const json = (await res.json()) as ImageApiResponse;
+
+    return {
+      items: json.items.map((item) => ({
+        id: item.id,
+        src: item.src,
+        alt: item.alt ?? "Image",
+      })),
+      hasMore: json.nextPage !== null && json.nextPage !== undefined,
+    };
   },
 };
 ```
@@ -192,12 +267,40 @@ Supported modes:
 If you omit `copywritings`, the built-in snippet library is used.
 
 ```tsx
+type CopyApiResponse = {
+  items: Array<{
+    category: string;
+    label: string;
+    text: string;
+  }>;
+  total?: number;
+};
+
 const remoteCopy: CopywritingProps = {
   pageSize: 24,
   loadPage: async (query, page, pageSize) => {
-    const res = await fetch(`/api/copy?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`);
-    const json = await res.json();
-    return { items: json.items, hasMore: json.hasMore };
+    const params = new URLSearchParams({
+      q: query,
+      page: String(page),
+      pageSize: String(pageSize),
+    });
+    const res = await fetch(`/api/copy?${params.toString()}`);
+
+    if (!res.ok) {
+      throw new Error(`Copy request failed: ${res.status}`);
+    }
+
+    const json = (await res.json()) as CopyApiResponse;
+    const consumed = (page + 1) * pageSize;
+
+    return {
+      items: json.items.map((item) => ({
+        category: item.category,
+        label: item.label,
+        text: item.text,
+      })),
+      hasMore: json.total !== undefined ? consumed < json.total : json.items.length >= pageSize,
+    };
   },
 };
 ```
@@ -206,7 +309,7 @@ const remoteCopy: CopywritingProps = {
 
 ### Shared Scroll Infrastructure
 
-[`ScrollArea`](./src/components/ui/scroll-area.tsx) now exposes a `viewportRef` prop so virtualized panels can bind `@tanstack/react-virtual` to the real scroll container instead of the outer wrapper. This is the shared foundation used by both sidebar libraries.
+[`ScrollArea`](./src/components/ui/scroll-area.tsx) now exposes a `viewportRef` prop so virtualized panels can bind `@tanstack/react-virtual` to the real scroll container instead of the outer wrapper. This viewport ref is the required shared foundation for both sidebar libraries, because their measurements, overscan, and load-more checks all depend on the actual scroll container.
 
 ## Localization
 
@@ -303,6 +406,8 @@ The drag-drop libraries communicate with the canvas through typed `window` event
 ### Public types
 
 - `StudioProps`
+- `StudioActionHandler`
+- `StudioHeaderAction`
 - `ImagesProps`
 - `ImageItem`
 - `CopywritingProps`
@@ -322,7 +427,7 @@ The drag-drop libraries communicate with the canvas through typed `window` event
 
 - `Studio` is desktop-first today; [`EditorLayout`](./src/core/studio/layout/Layout.tsx) is hidden on very small screens
 - The image and copy libraries are local editor tooling, not asset management backends
-- The share and collaborators popovers in the header are presentational shell UI, not real-time collaboration features
+- The built-in share dialog and collaborators popover are shell-level conveniences; they can be replaced with host callbacks, but they are not real-time collaboration features
 - If you need fully custom publish, share, or shell-level workflows, build on `puckOverrides` directly or fork `Studio`
 
 ## Development
