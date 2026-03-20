@@ -33,6 +33,12 @@ export function useCanvasViewport() {
 export function useSetCanvasViewport() {
   return useStore(useEditorUiStoreApi(), (s) => s.setCanvasViewport);
 }
+export function useCanvasLibraryDragType() {
+  return useStore(useEditorUiStoreApi(), (s) => s.canvasLibraryDragType);
+}
+export function useSetCanvasLibraryDragType() {
+  return useStore(useEditorUiStoreApi(), (s) => s.setCanvasLibraryDragType);
+}
 export function useTheme() {
   return useStore(useEditorUiStoreApi(), (s) => s.theme);
 }

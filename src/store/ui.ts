@@ -1,5 +1,6 @@
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
+import type { LibraryDragType } from "@/features/library-dnd/drop-contract";
 
 export const ACTIVE_TABS = [
   "insert",
@@ -50,6 +51,8 @@ interface ThemeSlice {
 interface CanvasSlice {
   canvasViewport: CanvasViewport;
   setCanvasViewport: (viewport: CanvasViewport) => void;
+  canvasLibraryDragType: LibraryDragType | null;
+  setCanvasLibraryDragType: (type: LibraryDragType | null) => void;
 }
 
 export type EditorUiStore = DrawerSlice &
@@ -80,6 +83,8 @@ export function createEditorUiStore(storeId: string) {
           })),
         canvasViewport: "desktop",
         setCanvasViewport: (canvasViewport) => set({ canvasViewport }),
+        canvasLibraryDragType: null,
+        setCanvasLibraryDragType: (canvasLibraryDragType) => set({ canvasLibraryDragType }),
         theme: "light",
         toggleTheme: () =>
           set((s) => {

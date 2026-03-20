@@ -9,13 +9,13 @@ import {
 import { cn } from "@/components/ui/utils";
 import { useReportStudioAction } from "@/core/studio/useReportStudioAction";
 import { usePuckSelector } from "@/lib/use-puck-selector";
-import { useCanvasViewport, useMsg, useSetCanvasViewport } from "@/store/hooks";
-import { Redo2, Undo2 } from "lucide-react";
-import * as React from "react";
 import {
   canvasViewportOrder,
   canvasViewportPresets,
-} from "@/core/overrides/canvas/viewports";
+} from "@/lib/canvas/viewports";
+import { useCanvasViewport, useMsg, useSetCanvasViewport } from "@/store/hooks";
+import { Redo2, Undo2 } from "lucide-react";
+import * as React from "react";
 
 export function ToolBar(): React.ReactElement {
   const history = usePuckSelector((state) => state.history);

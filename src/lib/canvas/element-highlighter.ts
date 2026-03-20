@@ -19,5 +19,5 @@ export function createElementHighlighter() {
     set(null, "");
   }
 
-  return { set, clear };
+  return { clear, set };
 }

@@ -1,4 +1,5 @@
 "use client";
+
 import * as React from "react";
 import { useGetPuck } from "@puckeditor/core";
 import {
@@ -7,27 +8,24 @@ import {
   TEXT_DROP,
   addLibraryDragEventListener,
 } from "@/features/library-dnd/drop-contract";
-import type {
-  LibraryDragType,
-} from "@/features/library-dnd/drop-contract";
-import {
-  replaceImageInProps,
-  replaceTextInProps,
-} from "@/features/library-dnd/replace-props";
+import type { LibraryDragType } from "@/features/library-dnd/drop-contract";
+import { replaceImageInProps, replaceTextInProps } from "@/features/library-dnd/replace-props";
 import {
   getComponentElAt,
   getImageElInComponent,
   getTextElInComponent,
-} from "./drop-targets";
-import { createElementHighlighter } from "./highlight";
+} from "@/lib/canvas/drop-targets";
+import { createElementHighlighter } from "@/lib/canvas/element-highlighter";
+import { useEditorUiStoreApi } from "@/store/ui-context";
 
 /**
  * Bridges library drag events to Puck prop-replacement dispatches.
  * Handles hit-testing inside the iframe, highlight feedback, and cleanup.
  * All global listeners are deterministically removed on unmount or iframeDoc change.
  */
-export function useLibraryDropBridge(iframeDoc: Document | undefined): void {
+export function useCanvasLibraryDropBridge(iframeDoc: Document | undefined): void {
   const getPuck = useGetPuck();
+  const uiStoreApi = useEditorUiStoreApi();
 
   React.useEffect(() => {
     if (!iframeDoc) return;
@@ -35,11 +33,15 @@ export function useLibraryDropBridge(iframeDoc: Document | undefined): void {
     if (!iframeEl) return;
     const iframeDocument = iframeDoc;
     const frameElement = iframeEl;
-
-    let activeLibrary: LibraryDragType | null = null;
     const highlighter = createElementHighlighter();
 
-    // ── Puck dispatch ───────────────────────────────────────────────────────
+    function getActiveLibrary(): LibraryDragType | null {
+      return uiStoreApi.getState().canvasLibraryDragType;
+    }
+
+    function setActiveLibrary(type: LibraryDragType | null): void {
+      uiStoreApi.getState().setCanvasLibraryDragType(type);
+    }
 
     function dispatchReplace(
       componentId: string,
@@ -61,19 +63,20 @@ export function useLibraryDropBridge(iframeDoc: Document | undefined): void {
       return true;
     }
 
-    // ── Event handlers ──────────────────────────────────────────────────────
-
     function onLibraryDragStart(type: LibraryDragType): void {
-      activeLibrary = type;
+      setActiveLibrary(type);
     }
 
     function onPointerMove(e: PointerEvent): void {
+      const activeLibrary = getActiveLibrary();
       if (!activeLibrary) return;
+
       const compEl = getComponentElAt(iframeDocument, frameElement, e.clientX, e.clientY);
       if (!compEl) {
         highlighter.clear();
         return;
       }
+
       if (activeLibrary === "image") {
         highlighter.set(
           getImageElInComponent(compEl, frameElement, e.clientX, e.clientY),
@@ -88,35 +91,37 @@ export function useLibraryDropBridge(iframeDoc: Document | undefined): void {
     }
 
     function onPointerUp(): void {
-      activeLibrary = null;
+      setActiveLibrary(null);
       highlighter.clear();
     }
 
     function onImageDrop(src: string, clientX: number, clientY: number): void {
       highlighter.clear();
-      activeLibrary = null;
+      setActiveLibrary(null);
       if (!src) return;
+
       const compEl = getComponentElAt(iframeDocument, frameElement, clientX, clientY);
       if (!compEl) return;
       const componentId = compEl.dataset.puckComponent;
       if (!componentId) return;
+
       const item = getPuck().getItemById(componentId);
       if (!item) return;
-      const updatedProps = replaceImageInProps(
-        item.props as Record<string, unknown>,
-        src,
-      );
+
+      const updatedProps = replaceImageInProps(item.props as Record<string, unknown>, src);
       dispatchReplace(componentId, updatedProps);
     }
 
     function onTextDrop(text: string, clientX: number, clientY: number): void {
       highlighter.clear();
-      activeLibrary = null;
+      setActiveLibrary(null);
       if (!text) return;
+
       const compEl = getComponentElAt(iframeDocument, frameElement, clientX, clientY);
       if (!compEl) return;
       const componentId = compEl.dataset.puckComponent;
       if (!componentId) return;
+
       const textEl = getTextElInComponent(
         iframeDocument,
         frameElement,
@@ -127,15 +132,16 @@ export function useLibraryDropBridge(iframeDoc: Document | undefined): void {
       const targetText = textEl?.textContent?.trim() ?? "";
       const item = getPuck().getItemById(componentId);
       if (!item) return;
-      const { result: updatedProps, replaced } = replaceTextInProps(
+
+      const { replaced, result: updatedProps } = replaceTextInProps(
         item.props as Record<string, unknown>,
         text,
         targetText,
       );
-      if (replaced) dispatchReplace(componentId, updatedProps);
+      if (replaced) {
+        dispatchReplace(componentId, updatedProps);
+      }
     }
-
-    // ── Register / cleanup ──────────────────────────────────────────────────
 
     const removeLibraryDragStart = addLibraryDragEventListener(
       LIBRARY_DRAG_START,
@@ -146,11 +152,11 @@ export function useLibraryDropBridge(iframeDoc: Document | undefined): void {
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
     const removeImageDrop = addLibraryDragEventListener(IMAGE_DROP, (event) => {
-      const { src, clientX, clientY } = event.detail;
+      const { clientX, clientY, src } = event.detail;
       onImageDrop(src, clientX, clientY);
     });
     const removeTextDrop = addLibraryDragEventListener(TEXT_DROP, (event) => {
-      const { text, clientX, clientY } = event.detail;
+      const { clientX, clientY, text } = event.detail;
       onTextDrop(text, clientX, clientY);
     });
 
@@ -160,7 +166,8 @@ export function useLibraryDropBridge(iframeDoc: Document | undefined): void {
       window.removeEventListener("pointerup", onPointerUp);
       removeImageDrop();
       removeTextDrop();
+      setActiveLibrary(null);
       highlighter.clear();
     };
-  }, [iframeDoc, getPuck]);
+  }, [getPuck, iframeDoc, uiStoreApi]);
 }
