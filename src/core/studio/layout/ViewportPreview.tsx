@@ -1,5 +1,9 @@
 import { Puck } from "@puckeditor/core";
 import {
+  normalizeCanvasRootHeight,
+  normalizeCanvasZoomLevel,
+} from "@/lib/canvas/zoom";
+import {
   getCanvasViewportPixelWidth,
   getCanvasViewportWidth,
 } from "@/lib/canvas/viewports";
@@ -11,11 +15,16 @@ import { ToolBar } from "./ToolBar";
 export function ViewportPreview(): ReactElement {
   const frameRef = useCanvasZoomSync<HTMLDivElement>();
   const canvasViewport = useCanvasViewport();
-  const canvasRootHeight = useCanvasRootHeight();
-  const canvasZoom = useCanvasZoom();
+  const canvasRootHeight = normalizeCanvasRootHeight(useCanvasRootHeight());
+  const canvasZoom = normalizeCanvasZoomLevel(useCanvasZoom());
   const viewportWidth = getCanvasViewportPixelWidth(canvasViewport);
-  const scaledViewportHeight = canvasRootHeight > 0 ? canvasRootHeight * canvasZoom : undefined;
-  const scaledViewportWidth = viewportWidth * canvasZoom;
+  const scaledViewportHeight =
+    canvasRootHeight > 0 && Number.isFinite(canvasRootHeight * canvasZoom)
+      ? canvasRootHeight * canvasZoom
+      : undefined;
+  const scaledViewportWidth = Number.isFinite(viewportWidth * canvasZoom)
+    ? viewportWidth * canvasZoom
+    : viewportWidth;
 
   return (
     <div className="flex h-full flex-1 flex-col overflow-hidden  bg-neutral-100/70 dark:bg-neutral-950/90">
@@ -32,6 +41,7 @@ export function ViewportPreview(): ReactElement {
             >
               <div
                 className="absolute top-0 left-0 overflow-hidden rounded-md shadow-sm duration-200 ease-out"
+                data-anvilkit-canvas-surface="true"
                 style={{
                   width: getCanvasViewportWidth(canvasViewport),
                   height: canvasRootHeight > 0 ? canvasRootHeight : "100%",
