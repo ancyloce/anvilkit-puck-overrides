@@ -33,7 +33,8 @@ Nothing in `src/` may import from `next`. Keep Next.js usage in `app/` only.
 | `src/features/theme/useThemeSync.ts` | Theme sync for host document and iframe |
 | `src/store/*` | UI store, i18n store, providers, and hooks |
 | `src/components/ui/*` | Base UI wrappers and shared primitives |
-| `app/page.tsx` | Demo editor page |
+| `src/components/ui/scroll-area.tsx` | Shared scroll wrapper; exposes `viewportRef` for virtualized panels |
+| `app/page.tsx` | Demo editor page with showcase `images` and `copywritings` data |
 | `app/globals.css` | Demo Tailwind setup and tokens |
 
 ## Public API
@@ -70,6 +71,11 @@ Compatibility exports:
 
 Contributor rule:
 If you add or remove anything from the public API, update [`src/types/api.test-d.ts`](./src/types/api.test-d.ts).
+
+Current public library prop surfaces to keep in sync:
+
+- `ImagesProps`: `items`, `seeds`, `loadPage`, `pageSize`
+- `CopywritingProps`: `items`, `loadPage`, `pageSize`
 
 ## Runtime Architecture
 
@@ -169,6 +175,18 @@ Testing:
 
 - Runtime tests for replacement heuristics live in [`src/features/library-dnd/replace-props.test.ts`](./src/features/library-dnd/replace-props.test.ts)
 
+## Sidebar Library Guidance
+
+The sidebar libraries are editor-local tooling that live inside a shared `ScrollArea`. The current implementation direction is intentional and should stay consistent unless there is a strong architectural reason to change it.
+
+- Use `@tanstack/react-virtual` for long sidebar lists so the shell keeps drag behavior and search UX while keeping DOM size small.
+- `ImageLibrary` uses row-based virtualization for the two-column grid. Infinite loading should continue to flow through `loadPage(query, page, pageSize)`.
+- `CopyLibrary` uses single-column virtualization over one flattened render list. Search mode virtualizes filtered snippets directly; non-search mode flattens category headers and snippet items together so grouping is preserved.
+- Preserve backward compatibility when changing these panels: `ImageLibrary` still supports `items` and `seeds`, and `CopyLibrary` still supports `items`.
+- `src/components/ui/scroll-area.tsx` exposes `viewportRef`; virtualizers must bind to that viewport element, not the outer root wrapper, or measurements and load-more triggers will drift.
+- Keep `useGhostDrag` and the existing drag/drop event contract intact when refactoring the libraries.
+- If you change `ImagesProps`, `CopywritingProps`, or public exports, update [`README.md`](./README.md), [`docs/README.zh.md`](./docs/README.zh.md), [`app/page.tsx`](./app/page.tsx), and [`src/types/api.test-d.ts`](./src/types/api.test-d.ts) in the same change.
+
 ## Theme Sync
 
 [`useThemeSync`](./src/features/theme/useThemeSync.ts) is the single source of truth for theme application:
@@ -203,6 +221,7 @@ Tooltip special case:
 - [`src/core/overrides/layout/EditorDrawer.tsx`](./src/core/overrides/layout/EditorDrawer.tsx) flattens Puck's drawer markup with `display: contents`; seemingly harmless wrapper changes can break the grid
 - [`src/core/overrides/canvas/ComponentOverlay.tsx`](./src/core/overrides/canvas/ComponentOverlay.tsx) must remain `pointer-events-none`
 - [`src/core/overrides/canvas/CanvasPreview.tsx`](./src/core/overrides/canvas/CanvasPreview.tsx) is intentionally lightweight
+- [`app/page.tsx`](./app/page.tsx) is the live showcase for passing `images` and `copywritings` into `Studio`; keep its demo data rich enough to exercise search, drag behavior, and copy grouping
 - [`src/core/studio/layout/sidebar/library/ImageLibrary.tsx`](./src/core/studio/layout/sidebar/library/ImageLibrary.tsx) and [`src/core/studio/layout/sidebar/library/CopyLibrary.tsx`](./src/core/studio/layout/sidebar/library/CopyLibrary.tsx) are local tooling, not external data integrations
 
 ## Known Gaps In The Current Implementation
@@ -248,3 +267,4 @@ Build notes:
 - Use the `@/` alias inside `src/`
 - Keep `src/index.ts` as the canonical public surface
 - When changing i18n or persistence behavior, think about migration and backwards compatibility
+- Keep docs, examples, and public type tests in sync whenever library props, demo wiring, or exported types change

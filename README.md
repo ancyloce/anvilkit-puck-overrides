@@ -13,7 +13,7 @@ Opinionated Puck editor chrome and override pack built with React 19, `@base-ui/
 
 - `Studio`: a desktop editor shell around `<Puck />` with a custom header, left sidebar, preview area, and fields panel
 - `puckOverrides`: a packaged set of Puck overrides for drawer, outline, preview, canvas, and fields surfaces
-- Image and copy libraries with ghost-drag into the canvas
+- Virtualized image and copy libraries with ghost-drag into the canvas
 - Per-instance persisted UI state via `storeId`
 - Persisted locale state plus message overrides
 - Light/dark theme sync between the host document and the Puck iframe
@@ -76,8 +76,8 @@ export function Editor({ config, data, setData, save }) {
 | `onChange` | Optional Puck `onChange` passthrough |
 | `onBack` | Optional header back-button click handler; when provided, the back button is rendered |
 | `overrideExtensions` | Merged last, so your overrides win over the packaged defaults |
-| `images` | Seeds or fixed items for the image library |
-| `copywritings` | Fixed snippets for the copy library |
+| `images` | Configures image library `items`, `seeds`, or paged loading |
+| `copywritings` | Configures copy library `items` or paged loading |
 | `aiHost` | Lazily loads `@puckeditor/plugin-ai` and renders its panel in the copilot tab |
 | `storeId` | Namespaces persisted UI state under `anvilkit-ui-${storeId}` |
 | `locale` | Current locale string; defaults to `"zh"` |
@@ -92,25 +92,48 @@ Merge order for overrides is:
 
 That means consumer overrides take precedence.
 
+### Demo App Coverage
+
+[`app/page.tsx`](./app/page.tsx) now passes showcase `demoImages` and `demoCopywritings` into `Studio`, so the local demo page has visible content in both `ImageLibrary` and `CopyLibrary`.
+
+Use `pnpm dev` and the sidebar tabs to verify:
+
+- search behavior in both libraries
+- image ghost-drag from `ImageLibrary`
+- text ghost-drag from `CopyLibrary`
+- grouped category presentation in `CopyLibrary`
+- the recommended `images` and `copywritings` integration pattern inside `Studio`
+
 ## Library Customization
 
 ### Image Library
 
+`ImageLibrary` uses `@tanstack/react-virtual` with row-based virtualization over the existing two-column grid. Infinite loading is unified behind `loadPage(query, page, pageSize)`, while backward-compatible fixed-data inputs remain supported.
+
 ```tsx
-import type { ImageItem } from "@anvilkit/puck-studio";
+import type { ImageItem, ImagesProps } from "@anvilkit/puck-studio";
 
 const brandImages: ImageItem[] = [
   { id: "hero-1", src: "https://cdn.example.com/hero.jpg", alt: "Hero" },
   { id: "logo-1", src: "https://cdn.example.com/logo.png", alt: "Logo" },
 ];
 
+const images: ImagesProps = { items: brandImages };
+
 <Studio
   config={config}
   data={data}
   onPublish={save}
-  images={{ items: brandImages }}
+  images={images}
 />
 ```
+
+Supported modes:
+
+- `items`: fixed images; bypasses internal paging and remains the simplest integration
+- `seeds`: placeholder-image fallback for local demos and lightweight setups
+- `loadPage`: paged loading via `loadPage(query, page, pageSize)`
+- `pageSize`: optional page size for internal infinite loading
 
 If you only want placeholder images, provide `seeds` instead of `items`:
 
@@ -123,25 +146,67 @@ If you only want placeholder images, provide `seeds` instead of `items`:
 />
 ```
 
-### Copy Library
+For paged loading, keep the loader focused on returning the next page of images for the current search query:
 
 ```tsx
-import type { CopywritingItem } from "@anvilkit/puck-studio";
+const remoteImages: ImagesProps = {
+  pageSize: 24,
+  loadPage: async (query, page, pageSize) => {
+    const res = await fetch(`/api/images?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`);
+    const json = await res.json();
+    return { items: json.items, hasMore: json.hasMore };
+  },
+};
+```
+
+`loadPage` may return either an array of `ImageItem` values or `{ items, hasMore }`. If `hasMore` is omitted, it is inferred from the returned page length.
+
+### Copy Library
+
+`CopyLibrary` uses `@tanstack/react-virtual` with single-column virtualization. Search mode virtualizes the flattened filtered snippets directly. Non-search mode preserves grouped category presentation by flattening category headers and snippet cards into one virtualized render list.
+
+```tsx
+import type { CopywritingItem, CopywritingProps } from "@anvilkit/puck-studio";
 
 const snippets: CopywritingItem[] = [
   { category: "Headlines", label: "Promise", text: "Built for builders." },
   { category: "CTAs", label: "Primary", text: "Start for free" },
 ];
 
+const copywritings: CopywritingProps = { items: snippets };
+
 <Studio
   config={config}
   data={data}
   onPublish={save}
-  copywritings={{ items: snippets }}
+  copywritings={copywritings}
 />
 ```
 
+Supported modes:
+
+- `items`: fixed snippets; remains fully supported
+- `loadPage`: paged loading via `loadPage(query, page, pageSize)`
+- `pageSize`: optional page size for internal infinite loading
+
 If you omit `copywritings`, the built-in snippet library is used.
+
+```tsx
+const remoteCopy: CopywritingProps = {
+  pageSize: 24,
+  loadPage: async (query, page, pageSize) => {
+    const res = await fetch(`/api/copy?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`);
+    const json = await res.json();
+    return { items: json.items, hasMore: json.hasMore };
+  },
+};
+```
+
+`loadPage` may return either an array of `CopywritingItem` values or `{ items, hasMore }`. If `hasMore` is omitted, it is inferred from the returned page length.
+
+### Shared Scroll Infrastructure
+
+[`ScrollArea`](./src/components/ui/scroll-area.tsx) now exposes a `viewportRef` prop so virtualized panels can bind `@tanstack/react-virtual` to the real scroll container instead of the outer wrapper. This is the shared foundation used by both sidebar libraries.
 
 ## Localization
 

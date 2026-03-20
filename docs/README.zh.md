@@ -13,12 +13,12 @@
 
 - `Studio`：围绕 `<Puck />` 封装的桌面端编辑器壳层，包含自定义头部、左侧边栏、预览区和字段面板
 - `puckOverrides`：一组打包好的 Puck overrides，覆盖 drawer、outline、preview、canvas 和 fields 等界面
-- 图片库和文案库，支持以 ghost-drag 的方式拖入 canvas
+- 虚拟化的图片库和文案库，支持以 ghost-drag 的方式拖入 canvas
 - 基于 `storeId` 的实例级持久化 UI 状态
 - 持久化的 locale 状态，以及可覆盖的消息文案
 - 主文档与 Puck iframe 之间的明暗主题同步
 - 当提供 `aiHost` 时，可选启用 AI copilot 面板
-- 通过 `@anvilkit/puck-studio/styles.css` 导出的 CSS design tokens
+- 通过 `@anvilkit/puck-studio/styles.css` 导出的编译后包样式
 
 ## 依赖要求
 
@@ -28,12 +28,11 @@
 | `react-dom` | `^19.2.4` |
 | `@puckeditor/core` | `^0.21.1` |
 | `@base-ui/react` | `^1.3.0` |
-| `tailwindcss` | `^4.2.1` |
 
 `next` 仅用于 [`../app/`](../app) 下的本地演示应用，不会被发布库中的 [`../src/`](../src) 代码直接引入。
 
-Tailwind 说明:
-这个包导出的是设计 token 和 class name，并不是一份独立编译好的 utilities 样式包。你的应用仍然需要正确配置 Tailwind v4。如果当前 Tailwind 配置不会自动扫描依赖代码，请把本包加入 Tailwind 的扫描源中。
+样式说明:
+根运行时入口现在会自动加载编译后的包样式。你仍然可以显式 `import "@anvilkit/puck-studio/styles.css"`，但 `import { Studio } from "@anvilkit/puck-studio"` 和 `import { puckOverrides } from "@anvilkit/puck-studio/overrides"` 已经会自动带上包样式。
 
 ## 安装
 
@@ -46,14 +45,13 @@ pnpm add @anvilkit/puck-studio
 - 根入口：`@anvilkit/puck-studio`
 - 仅 overrides 入口：`@anvilkit/puck-studio/overrides`
 - 已废弃的兼容入口：`@anvilkit/puck-studio/legacy`
-- design tokens：`@anvilkit/puck-studio/styles.css`
+- 编译后包样式：`@anvilkit/puck-studio/styles.css`
 
 ## 推荐用法：`Studio`
 
 `Studio` 是更高层的入口。它会挂载 `Puck`、注入 Puck 基础 CSS、创建 UI 和 i18n store、合并默认 overrides，并渲染自定义编辑器壳层。
 
 ```tsx
-import "@anvilkit/puck-studio/styles.css";
 import { Studio } from "@anvilkit/puck-studio";
 
 export function Editor({ config, data, setData, save }) {
@@ -78,8 +76,8 @@ export function Editor({ config, data, setData, save }) {
 | `onChange` | 可选的 Puck `onChange` 透传 |
 | `onBack` | 可选的 header 返回按钮点击回调；提供后才会渲染返回按钮 |
 | `overrideExtensions` | 最后参与合并，因此你的 overrides 优先级高于包内默认值 |
-| `images` | 为图片库提供初始项或固定项 |
-| `copywritings` | 为文案库提供固定片段 |
+| `images` | 为图片库配置 `items`、`seeds` 或分页加载 |
+| `copywritings` | 为文案库配置 `items` 或分页加载 |
 | `aiHost` | 懒加载 `@puckeditor/plugin-ai`，并在 copilot tab 中渲染其面板 |
 | `storeId` | 将持久化 UI 状态命名为 `anvilkit-ui-${storeId}` |
 | `locale` | 当前语言；默认是 `"zh"` |
@@ -94,25 +92,48 @@ overrides 的合并顺序是：
 
 这意味着 consumer 传入的 overrides 拥有最高优先级。
 
+### Demo 页面覆盖范围
+
+[`../app/page.tsx`](../app/page.tsx) 现在会把展示用的 `demoImages` 和 `demoCopywritings` 传给 `Studio`，因此本地 demo 页面会在 `ImageLibrary` 和 `CopyLibrary` 两个 tab 中直接显示可操作内容。
+
+运行 `pnpm dev` 后，可以通过侧边栏验证：
+
+- 两个库里的搜索行为
+- 从 `ImageLibrary` 拖拽图片 ghost
+- 从 `CopyLibrary` 拖拽文本 ghost
+- `CopyLibrary` 的分类分组展示
+- 在 `Studio` 中传入 `images` 与 `copywritings` 的推荐集成方式
+
 ## 库能力定制
 
 ### 图片库
 
+`ImageLibrary` 现在基于 `@tanstack/react-virtual`，对现有双列网格采用按行虚拟化。无限加载统一走 `loadPage(query, page, pageSize)`，同时继续兼容原有的固定数据输入方式。
+
 ```tsx
-import type { ImageItem } from "@anvilkit/puck-studio";
+import type { ImageItem, ImagesProps } from "@anvilkit/puck-studio";
 
 const brandImages: ImageItem[] = [
   { id: "hero-1", src: "https://cdn.example.com/hero.jpg", alt: "Hero" },
   { id: "logo-1", src: "https://cdn.example.com/logo.png", alt: "Logo" },
 ];
 
+const images: ImagesProps = { items: brandImages };
+
 <Studio
   config={config}
   data={data}
   onPublish={save}
-  images={{ items: brandImages }}
+  images={images}
 />
 ```
+
+支持的模式：
+
+- `items`：固定图片；会绕过内部分页逻辑，仍然是最简单的接入方式
+- `seeds`：本地 demo 或轻量场景下的占位图回退方案
+- `loadPage`：通过 `loadPage(query, page, pageSize)` 做分页加载
+- `pageSize`：可选的内部分页大小
 
 如果你只想提供占位图，可以传入 `seeds` 而不是 `items`：
 
@@ -125,25 +146,67 @@ const brandImages: ImageItem[] = [
 />
 ```
 
-### 文案库
+对于分页加载，建议让 loader 只负责返回当前搜索词下的一页图片：
 
 ```tsx
-import type { CopywritingItem } from "@anvilkit/puck-studio";
+const remoteImages: ImagesProps = {
+  pageSize: 24,
+  loadPage: async (query, page, pageSize) => {
+    const res = await fetch(`/api/images?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`);
+    const json = await res.json();
+    return { items: json.items, hasMore: json.hasMore };
+  },
+};
+```
+
+`loadPage` 可以返回 `ImageItem[]`，也可以返回 `{ items, hasMore }`。如果省略 `hasMore`，组件会根据返回数量自动推断。
+
+### 文案库
+
+`CopyLibrary` 现在基于 `@tanstack/react-virtual` 做单列虚拟化。搜索模式会直接对扁平化后的过滤结果做虚拟化；非搜索模式会先把分类标题和文案项压平成一个渲染列表，再在保留分组展示的前提下做虚拟化。
+
+```tsx
+import type { CopywritingItem, CopywritingProps } from "@anvilkit/puck-studio";
 
 const snippets: CopywritingItem[] = [
   { category: "Headlines", label: "Promise", text: "Built for builders." },
   { category: "CTAs", label: "Primary", text: "Start for free" },
 ];
 
+const copywritings: CopywritingProps = { items: snippets };
+
 <Studio
   config={config}
   data={data}
   onPublish={save}
-  copywritings={{ items: snippets }}
+  copywritings={copywritings}
 />
 ```
 
+支持的模式：
+
+- `items`：固定文案片段；保持完全兼容
+- `loadPage`：通过 `loadPage(query, page, pageSize)` 做分页加载
+- `pageSize`：可选的内部分页大小
+
 如果你省略 `copywritings`，则会使用内置文案片段库。
+
+```tsx
+const remoteCopy: CopywritingProps = {
+  pageSize: 24,
+  loadPage: async (query, page, pageSize) => {
+    const res = await fetch(`/api/copy?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`);
+    const json = await res.json();
+    return { items: json.items, hasMore: json.hasMore };
+  },
+};
+```
+
+`loadPage` 可以返回 `CopywritingItem[]`，也可以返回 `{ items, hasMore }`。如果省略 `hasMore`，组件会根据返回数量自动推断。
+
+### 共享滚动基础设施
+
+[`../src/components/ui/scroll-area.tsx`](../src/components/ui/scroll-area.tsx) 现在暴露 `viewportRef`，这样虚拟列表可以绑定到真实的滚动容器，而不是外层包裹元素。这是两个侧边栏库实现虚拟化的共同基础。
 
 ## 本地化
 
@@ -173,7 +236,6 @@ const snippets: CopywritingItem[] = [
 
 ```tsx
 import "@puckeditor/core/puck.css";
-import "@anvilkit/puck-studio/styles.css";
 
 import { Puck } from "@puckeditor/core";
 import { puckOverrides } from "@anvilkit/puck-studio";
