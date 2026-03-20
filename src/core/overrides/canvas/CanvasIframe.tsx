@@ -64,6 +64,15 @@ export function CanvasIframe({
     ],
   );
 
+  const handleToolbarMouseDown = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      // Keep focus from jumping into the iframe chrome before the history action runs.
+      event.preventDefault();
+      event.stopPropagation();
+    },
+    [],
+  );
+
   const handleUndo = React.useCallback(() => {
     history.back();
     reportStudioAction("undo");
@@ -127,6 +136,7 @@ export function CanvasIframe({
                       variant="outline"
                       size="icon"
                       disabled={!history.hasPast}
+                      onMouseDown={handleToolbarMouseDown}
                       onClick={handleUndo}
                       aria-label={undo}
                     />
@@ -145,6 +155,7 @@ export function CanvasIframe({
                       variant="outline"
                       size="icon"
                       disabled={!history.hasFuture}
+                      onMouseDown={handleToolbarMouseDown}
                       onClick={handleRedo}
                       aria-label={redo}
                     />

@@ -282,7 +282,7 @@ export const Header = ({
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-sm font-medium">
             {pageTitle || ""}
           </div>
-          <div className="flex items-center gap-1 h-full ml-auto">
+          <div className="flex items-center gap-1 h-full ml-auto justify-center">
             <Tooltip>
               <TooltipTrigger
                 render={
@@ -383,7 +383,7 @@ export const Header = ({
                       render={
                         <Button
                           variant="outline"
-                          size="icon"
+                          size="icon-sm"
                           aria-label={moreLabel}
                         />
                       }
