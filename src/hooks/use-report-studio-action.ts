@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
+import type { StudioHeaderAction } from "@/lib/studio/studio-action.types";
 import { usePuckSelector } from "@/lib/use-puck-selector";
-import { useStudioActionHandler } from "./studio-action-context";
-import type { StudioHeaderAction } from "./types";
+import { useStudioActionHandler } from "@/store/studio-actions";
 
 export function useReportStudioAction() {
   const onHeaderAction = useStudioActionHandler();

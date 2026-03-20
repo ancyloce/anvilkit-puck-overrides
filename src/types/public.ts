@@ -9,7 +9,7 @@ export type { StudioProps } from "@/core/studio/Studio";
 export type {
   StudioActionHandler,
   StudioHeaderAction,
-} from "@/core/studio/types";
+} from "@/lib/studio/studio-action.types";
 export type {
   ImagesProps,
   ImageItem,

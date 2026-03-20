@@ -26,6 +26,11 @@ import { useMsg, useLocale } from "@/store/editor-i18n";
 import { useTheme, useToggleTheme } from "@/store/editor-ui";
 import { useThemeSync } from "@/features/theme/useThemeSync";
 import { exportDataAsJson } from "@/features/export/export-json";
+import { useReportStudioAction } from "@/hooks/use-report-studio-action";
+import type {
+  StudioActionHandler,
+  StudioHeaderAction,
+} from "@/lib/studio/studio-action.types";
 import { usePuckSelector } from "@/lib/use-puck-selector";
 import {
   Tooltip,
@@ -42,8 +47,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { StudioActionHandler, StudioHeaderAction } from "../../types";
-import { useReportStudioAction } from "../../useReportStudioAction";
 
 interface HeaderProps {
   onBack?: React.MouseEventHandler<HTMLButtonElement>;

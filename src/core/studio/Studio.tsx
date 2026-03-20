@@ -1,10 +1,18 @@
 "use client";
 import * as React from "react";
 import { Puck } from "@puckeditor/core";
-import type { Config, Data, Overrides, UiState, Viewports } from "@puckeditor/core";
+import type { Config, Data, Overrides, UiState } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 
 import { puckOverrides } from "@/core/overrides";
+import {
+  fullWidthPreviewViewports,
+  mergeStudioUi,
+} from "@/lib/studio/studio-ui";
+import type {
+  StudioActionHandler,
+  StudioHeaderAction,
+} from "@/lib/studio/studio-action.types";
 import { EditorLayout } from "./layout/Layout";
 
 import type { ImagesProps, CopywritingProps } from "@/types/public";
@@ -16,51 +24,8 @@ import {
   defaultMessages,
   EditorI18nStoreProvider,
 } from "@/store/editor-i18n";
+import { StudioActionProvider } from "@/store/studio-actions";
 import type { Locale, Messages } from "@/store/editor-i18n";
-import type { StudioActionHandler, StudioHeaderAction } from "./types";
-import { StudioActionProvider } from "./studio-action-context";
-
-const fullWidthPreviewViewports: Viewports = [
-  {
-    width: "100%",
-    height: "auto",
-  },
-];
-
-const defaultStudioViewportCurrent: UiState["viewports"]["current"] = {
-  width: "100%",
-  height: "auto",
-};
-
-const defaultStudioViewports: UiState["viewports"] = {
-  controlsVisible: false,
-  current: defaultStudioViewportCurrent,
-  options: [],
-};
-
-const defaultStudioUi: Partial<UiState> = {
-  viewports: defaultStudioViewports,
-};
-
-function mergeStudioUi(ui?: Partial<UiState>): Partial<UiState> {
-  const viewports = ui?.viewports;
-  const currentViewport: UiState["viewports"]["current"] = {
-    width: viewports?.current?.width ?? defaultStudioViewportCurrent.width,
-    height: viewports?.current?.height ?? defaultStudioViewportCurrent.height,
-  };
-  const mergedViewports: UiState["viewports"] = {
-    ...defaultStudioViewports,
-    ...viewports,
-    current: currentViewport,
-    options: viewports?.options ?? defaultStudioViewports.options,
-  };
-
-  return {
-    ...defaultStudioUi,
-    ...ui,
-    viewports: mergedViewports,
-  };
-}
 
 export interface StudioProps {
   // Required Puck props

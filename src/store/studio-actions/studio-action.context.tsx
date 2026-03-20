@@ -1,17 +1,19 @@
 import * as React from "react";
-import type { StudioHeaderAction } from "./types";
+import type { StudioHeaderAction } from "@/lib/studio/studio-action.types";
 
 const StudioActionContext = React.createContext<
   ((action: StudioHeaderAction) => void) | undefined
 >(undefined);
 
+interface StudioActionProviderProps {
+  children: React.ReactNode;
+  onHeaderAction?: (action: StudioHeaderAction) => void;
+}
+
 export function StudioActionProvider({
   children,
   onHeaderAction,
-}: {
-  children: React.ReactNode;
-  onHeaderAction?: (action: StudioHeaderAction) => void;
-}) {
+}: StudioActionProviderProps) {
   return (
     <StudioActionContext.Provider value={onHeaderAction}>
       {children}

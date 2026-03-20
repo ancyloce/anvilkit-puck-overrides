@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/components/ui/utils";
-import { useReportStudioAction } from "@/core/studio/useReportStudioAction";
+import { useReportStudioAction } from "@/hooks/use-report-studio-action";
 import { usePuckSelector } from "@/lib/use-puck-selector";
 import {
   canvasViewportOrder,

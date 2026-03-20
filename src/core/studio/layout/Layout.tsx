@@ -6,9 +6,12 @@ import { useActiveTab } from "@/store/editor-ui";
 import { ImageLibrary } from "./sidebar/library/ImageLibrary";
 import { CopyLibrary } from "./sidebar/library/CopyLibrary";
 import { ViewportPreview } from "./ViewportPreview";
+import type {
+  StudioActionHandler,
+  StudioHeaderAction,
+} from "@/lib/studio/studio-action.types";
 import type { ImagesProps, CopywritingProps } from "@/types/public";
 import type { MouseEventHandler, ReactElement } from "react";
-import type { StudioActionHandler, StudioHeaderAction } from "../types";
 
 interface EditorLayoutProps {
   aiPanel?: ReactElement;
