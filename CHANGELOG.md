@@ -1,3 +1,10 @@
+## [0.4.1](https://github.com/ancyloce/anvilkit-studio/compare/v0.4.0...v0.4.1) (2026-03-20)
+
+### Refactors
+
+* Implement draft saving functionality in EditorPage, including state management for saving status and last saved timestamp. Enhance Studio component with onSaveDraft handler for improved user experience. ([c3a1463](https://github.com/ancyloce/anvilkit-studio/commit/c3a14634db863a09fa36cdb60892381eaf8d06cf))
+* Introduce StudioActionHandler and StudioHeaderAction types, enhancing the Studio component's action handling capabilities. Update StudioProps interface to include new action handlers for save, publish, share, and collaborators. Refactor related components to utilize these new types for improved type safety and clarity. ([afbabab](https://github.com/ancyloce/anvilkit-studio/commit/afbababe9b39d64467353e2425da587838f0cdb4))
+
 ## [0.4.0](https://github.com/ancyloce/anvilkit-studio/compare/v0.3.4...v0.4.0) (2026-03-20)
 
 ### Features
