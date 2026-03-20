@@ -10,12 +10,13 @@ import { EditorLayout } from "./layout/Layout";
 import type { ImagesProps, CopywritingProps } from "@/types/public";
 export type { ImagesProps, CopywritingProps };
 
-import { createEditorUiStore } from "@/store/ui";
-import { createEditorI18nStore } from "@/store/i18n";
-import { EditorUiStoreProvider } from "@/store/ui-context";
-import { EditorI18nStoreProvider } from "@/store/i18n-context";
-import { defaultMessages } from "@/store/i18n-defaults";
-import type { Locale, Messages } from "@/store/i18n";
+import { createEditorUiStore, EditorUiStoreProvider } from "@/store/editor-ui";
+import {
+  createEditorI18nStore,
+  defaultMessages,
+  EditorI18nStoreProvider,
+} from "@/store/editor-i18n";
+import type { Locale, Messages } from "@/store/editor-i18n";
 import type { StudioActionHandler, StudioHeaderAction } from "./types";
 import { StudioActionProvider } from "./studio-action-context";
 

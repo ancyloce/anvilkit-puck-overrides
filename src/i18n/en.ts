@@ -1,4 +1,4 @@
-import type { Messages } from "../store/i18n";
+import type { Messages } from "../store/editor-i18n";
 
 export const defaultMessages: Messages = {
   "header.back": "Back",

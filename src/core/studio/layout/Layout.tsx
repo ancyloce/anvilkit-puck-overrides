@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Aside } from "./sidebar/Aside";
 import { Puck } from "@puckeditor/core";
 import { Header } from "./header/Header";
-import { useActiveTab } from "@/store/hooks";
+import { useActiveTab } from "@/store/editor-ui";
 import { ImageLibrary } from "./sidebar/library/ImageLibrary";
 import { CopyLibrary } from "./sidebar/library/CopyLibrary";
 import { ViewportPreview } from "./ViewportPreview";

@@ -13,7 +13,8 @@ import {
   canvasViewportOrder,
   canvasViewportPresets,
 } from "@/lib/canvas/viewports";
-import { useCanvasViewport, useMsg, useSetCanvasViewport } from "@/store/hooks";
+import { useCanvasViewport, useSetCanvasViewport } from "@/store/editor-ui";
+import { useMsg } from "@/store/editor-i18n";
 import { Redo2, Undo2 } from "lucide-react";
 import * as React from "react";
 

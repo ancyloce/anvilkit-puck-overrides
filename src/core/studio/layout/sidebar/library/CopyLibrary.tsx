@@ -4,7 +4,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { Search, Type } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useMsg } from "@/store/hooks";
+import { useMsg } from "@/store/editor-i18n";
 import { useGhostDrag } from "@/features/library-dnd/useGhostDrag";
 
 export interface CopywritingItem {

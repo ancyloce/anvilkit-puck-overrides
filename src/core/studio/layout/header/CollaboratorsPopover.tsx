@@ -8,7 +8,7 @@ import {
   PopoverTitle,
 } from '@/components/animate-ui/components/base/popover';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useMsg } from '@/store/hooks';
+import { useMsg } from "@/store/editor-i18n";
 
 const AVATARS = [
   {

@@ -3,7 +3,7 @@ import * as React from "react";
 import { Toggle } from "@/components/ui/toggle";
 import { Bold, Italic, Link } from "lucide-react";
 import { FieldLabel } from "../FieldWrapper";
-import { useMsg } from "@/store/hooks";
+import { useMsg } from "@/store/editor-i18n";
 
 interface RichtextFieldProps {
   value: string;

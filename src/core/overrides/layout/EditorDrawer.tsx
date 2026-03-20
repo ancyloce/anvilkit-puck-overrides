@@ -1,7 +1,8 @@
 "use client";
 import * as React from "react";
 import { Search } from "lucide-react";
-import { useDrawerSearch, useSetDrawerSearch, useMsg } from "@/store/hooks";
+import { useDrawerSearch, useSetDrawerSearch } from "@/store/editor-ui";
+import { useMsg } from "@/store/editor-i18n";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 

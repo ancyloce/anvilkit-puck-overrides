@@ -24,10 +24,10 @@ export type {
   EditorUiStore,
   EditorUiStoreApi,
   ActiveTab,
-} from "@/store/ui";
+} from "@/store/editor-ui";
 
 export type {
   EditorI18nStoreApi,
   Locale,
   Messages,
-} from "@/store/i18n";
+} from "@/store/editor-i18n";

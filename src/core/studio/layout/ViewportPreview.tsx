@@ -1,6 +1,6 @@
 import { Puck } from "@puckeditor/core";
 import { getCanvasViewportWidth } from "@/lib/canvas/viewports";
-import { useCanvasViewport } from "@/store/hooks";
+import { useCanvasViewport } from "@/store/editor-ui";
 import type { ReactElement } from "react";
 import { ToolBar } from "./ToolBar";
 

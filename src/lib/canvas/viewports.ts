@@ -1,22 +1,22 @@
 import { Monitor, Smartphone, Tablet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { CanvasViewport } from "@/store/ui";
+import type { EditorCanvasViewport } from "@/store/editor-ui";
 
 interface CanvasViewportPreset {
   icon: LucideIcon;
   labelKey: string;
   tooltipKey: string;
-  value: CanvasViewport;
+  value: EditorCanvasViewport;
   width: number;
 }
 
-export const canvasViewportOrder: CanvasViewport[] = [
+export const canvasViewportOrder: EditorCanvasViewport[] = [
   "mobile",
   "tablet",
   "desktop",
 ];
 
-export const canvasViewportPresets: Record<CanvasViewport, CanvasViewportPreset> = {
+export const canvasViewportPresets: Record<EditorCanvasViewport, CanvasViewportPreset> = {
   mobile: {
     icon: Smartphone,
     labelKey: "canvas.viewport.mobile",
@@ -40,6 +40,6 @@ export const canvasViewportPresets: Record<CanvasViewport, CanvasViewportPreset>
   },
 };
 
-export function getCanvasViewportWidth(viewport: CanvasViewport): string {
+export function getCanvasViewportWidth(viewport: EditorCanvasViewport): string {
   return `min(100%, ${canvasViewportPresets[viewport].width}px)`;
 }

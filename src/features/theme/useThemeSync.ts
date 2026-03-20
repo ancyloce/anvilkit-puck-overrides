@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { useTheme } from "@/store/hooks";
+import { useTheme } from "@/store/editor-ui";
 
 const CANVAS_CSS = `
   *, *::before, *::after { box-sizing: border-box; }

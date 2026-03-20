@@ -1,1 +1,1 @@
-export { defaultMessages } from "../i18n/zh";
+export { defaultMessages } from "./editor-i18n";

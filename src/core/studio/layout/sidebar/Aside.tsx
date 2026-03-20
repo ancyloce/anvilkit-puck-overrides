@@ -1,14 +1,15 @@
 import * as React from "react";
-import { useActiveTab, useSetActiveTab, useMsg } from "@/store/hooks";
+import { useActiveTab, useSetActiveTab } from "@/store/editor-ui";
+import { useMsg } from "@/store/editor-i18n";
 import { Tabs, TabsList, TabsTab } from "@/components/animate-ui/components/base/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Plus, Image, Layers2, Type, Bot } from "lucide-react";
-import { isActiveTab, type ActiveTab } from "@/store/ui";
+import { isEditorSidebarTab, type EditorSidebarTab } from "@/store/editor-ui";
 
 export function Aside() {
   const activeTab = useActiveTab();
   const setActiveTab = useSetActiveTab();
-  const tabs: { value: ActiveTab; icon: React.ReactElement; label: string }[] = [
+  const tabs: { value: EditorSidebarTab; icon: React.ReactElement; label: string }[] = [
     { value: "insert", icon: <Plus className="h-4 w-4" />, label: useMsg("aside.insert") },
     { value: "layer", icon: <Layers2 className="h-4 w-4" />, label: useMsg("aside.layer") },
     { value: "image", icon: <Image className="h-4 w-4" />, label: useMsg("aside.image") },
@@ -22,7 +23,7 @@ export function Aside() {
         <Tabs
           value={activeTab}
           onValueChange={(value) => {
-            if (isActiveTab(value)) {
+            if (isEditorSidebarTab(value)) {
               setActiveTab(value);
             }
           }}

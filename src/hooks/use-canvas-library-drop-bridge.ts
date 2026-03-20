@@ -16,7 +16,7 @@ import {
   getTextElInComponent,
 } from "@/lib/canvas/drop-targets";
 import { createElementHighlighter } from "@/lib/canvas/element-highlighter";
-import { useEditorUiStoreApi } from "@/store/ui-context";
+import { useEditorUiStoreApi } from "@/store/editor-ui";
 
 /**
  * Bridges library drag events to Puck prop-replacement dispatches.

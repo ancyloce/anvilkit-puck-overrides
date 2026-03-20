@@ -22,7 +22,8 @@ import {
   Send,
   Sun,
 } from "lucide-react";
-import { useLocale, useMsg, useTheme, useToggleTheme } from "@/store/hooks";
+import { useMsg, useLocale } from "@/store/editor-i18n";
+import { useTheme, useToggleTheme } from "@/store/editor-ui";
 import { useThemeSync } from "@/features/theme/useThemeSync";
 import { exportDataAsJson } from "@/features/export/export-json";
 import { usePuckSelector } from "@/lib/use-puck-selector";
