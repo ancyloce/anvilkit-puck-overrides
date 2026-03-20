@@ -255,9 +255,7 @@ export function Editor({ config, data, onPublish }) {
 当前打包导出的 override 对象接入了这些 Puck key：
 
 - `drawer`
-- `components`
 - `drawerItem`
-- `componentItem`
 - `outline`
 - `iframe`
 - `preview`

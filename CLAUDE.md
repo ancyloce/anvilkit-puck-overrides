@@ -114,9 +114,7 @@ Important distinction:
 [`puckOverrides`](./src/core/overrides/index.tsx) currently wires:
 
 - `drawer`
-- `components`
 - `drawerItem`
-- `componentItem`
 - `outline`
 - `iframe`
 - `preview`

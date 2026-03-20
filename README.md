@@ -255,9 +255,7 @@ export function Editor({ config, data, onPublish }) {
 The packaged override object currently wires these Puck keys:
 
 - `drawer`
-- `components`
 - `drawerItem`
-- `componentItem`
 - `outline`
 - `iframe`
 - `preview`
