@@ -66,6 +66,24 @@ expectType<string>(copyItem.label);
 expectType<string>(copyItem.text);
 expectType<string>(copyItem.category);
 
+declare const copyProps: CopywritingProps;
+expectType<number | undefined>(copyProps.pageSize);
+expectType<CopywritingProps["loadPage"] | undefined>(copyProps.loadPage);
+
+const copyLoadPage: NonNullable<CopywritingProps["loadPage"]> = async (
+  query,
+  page,
+  pageSize,
+) => {
+  expectType<string>(query);
+  expectType<number>(page);
+  expectType<number>(pageSize);
+
+  return { items: [copyItem], hasMore: false };
+};
+
+expectAssignable<NonNullable<CopywritingProps["loadPage"]>>(copyLoadPage);
+
 // ─── ActiveTab union ─────────────────────────────────────────────────────────
 expectAssignable<ActiveTab>("insert");
 expectAssignable<ActiveTab>("layer");
